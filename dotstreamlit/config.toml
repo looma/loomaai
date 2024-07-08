@@ -1,0 +1,41 @@
+[client]
+toolbarMode = "minimal"
+showErrorDetails = true
+
+[server]
+folderWatchBlacklist = []
+#port = 9600
+#baseUrlPath = "/apps"
+headless=true
+enableCORS=false
+enableXsrfProtection = false
+maxUploadSize = 200
+maxMessageSize = 200
+enableWebsocketCompression = false
+
+[theme]
+#base = "light"
+base = "dark"
+#primaryColor="#F63366"
+#backgroundColor="#FFFFFF"
+#secondaryBackgroundColor="#F0F2F6"
+#textColor="#262730"
+#font="sans serif"
+
+#[sidebar]
+
+
+[logger]
+level = "info"
+messageFormat = "%(asctime)s %(message)s"
+
+[browser]
+gatherUsageStats = false
+serverAddress = "0.0.0.0"
+
+[runner]
+magicEnabled=true
+fastReruns=true
+
+[mapbox]
+token=""
