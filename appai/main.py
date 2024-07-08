@@ -11,7 +11,6 @@ from common.config import *
 st.title('Quick Sample App')
 
 #openai_api_key = st.sidebar.text_input('OpenAI API Key')
-#openai_api_key="sk-57Edk7h1xmWxFZhtKVfSiT3BlbkFJESSvjicmFy2KkxSVDNO8"
 
 try:
     cfg = ConfigInit()
