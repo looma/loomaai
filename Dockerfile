@@ -17,7 +17,6 @@ RUN pip install -r requirements.txt
 
 RUN mkdir -p /app/appai
 COPY appai/ /app/appai/
-COPY common/ /app/appai/common
 
 # Revise
 COPY .env /app/appai/.env

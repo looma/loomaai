@@ -7,11 +7,11 @@ if [ -d ~/.ollama ]; then
 fi
 
 if [ ! -d /app/data/ollama ]; then
-    mkdir -p /app/data/aidata/ollama
+    mkdir -p /app/data/models/ollama
 fi
 
 if [ ! -L ~/.ollama ]; then
-    ln -s /app/data/aidata/ollama ~/.ollama
+    ln -s /app/data/models/ollama ~/.ollama
 fi
 
 # setup location for file uploads 

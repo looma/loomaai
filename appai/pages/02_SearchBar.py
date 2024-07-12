@@ -1,6 +1,6 @@
 import streamlit as st
 
-st.title("Looma Search Space")
+st.title("Looma Content Search")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -14,3 +14,4 @@ if prompt := st.chat_input("Search Message ..."):
     with st.chat_message("user"):
         st.markdown(prompt)
 
+st.selectbox("Select DataContext: ", ("Chapters4-10", "Chapters1-3"))
