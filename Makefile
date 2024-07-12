@@ -20,7 +20,7 @@ run: $(DATAVOL)
 		-v $(DATAVOL):/app/data --name $(LAIC_CTR) $(LAIC_IMAGE)
 $(DATAVOL):
 	mkdir -p $(DATAVOL)
-	mkdir -p $(DATAVOL)/aidata
+	mkdir -p $(DATAVOL)/models
 
 stop:
 	$(DOCKER) stop $(LAIC_CTR)
