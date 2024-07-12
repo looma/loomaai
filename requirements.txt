@@ -1,0 +1,17 @@
+logzero
+requests
+streamlit
+streamlit_chat
+openai
+langchain-core
+langchain_community
+langchain
+faiss-cpu
+langchain-openai
+tiktoken
+langchain_postgres
+langchain-chroma
+pymupdf
+pymupdf4llm
+fastembed
+chromadb
