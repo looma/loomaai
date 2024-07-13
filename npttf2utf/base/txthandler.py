@@ -14,14 +14,19 @@ class TxtHandler:
 
     def map_fonts(self, original_file_path, output_file_path="mapped.txt", from_font="Preeti", to_font="unicode",
                   components=[], known_unicode_fonts=[]):
+        
+        allText = ""
+
         if from_font != "auto":
             with open(original_file_path, "r", encoding="utf-8") as original_file:
                 lines_original = original_file.readlines()
             output_file = open(output_file_path, "w")
             for line in lines_original:
                 if to_font.lower() == "unicode":
+                    allText += self.mapper.map_to_unicode(line, from_font, False)
                     output_file.write(self.mapper.map_to_unicode(line, from_font, False))
                 elif to_font.lower() == "preeti":
+                    allText += self.mapper.map_to_preeti(line, from_font, False)
                     output_file.write(self.mapper.map_to_preeti(line, from_font, False))
                 else:
                     raise UnsupportedMapToException
