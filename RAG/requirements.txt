@@ -6,3 +6,4 @@ fastembed
 chromadb
 streamlit
 streamlit_chat
+langchain-ollama
