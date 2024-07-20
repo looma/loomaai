@@ -1,8 +1,0 @@
-langchain_community
-langchain_core
-langchain
-pypdf
-fastembed
-chromadb
-streamlit
-streamlit_chat
