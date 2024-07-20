@@ -6,6 +6,7 @@ openai
 langchain-core
 langchain_community
 langchain
+langchain-text-splitters
 faiss-cpu
 langchain-openai
 tiktoken
@@ -15,3 +16,4 @@ pymupdf
 pymupdf4llm
 fastembed
 chromadb
+langchain_ollama
