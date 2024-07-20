@@ -54,9 +54,9 @@ for chapter in collection.find():
         chapter_pdf.insert_pdf(textbook_pdf, from_page=firstPage, to_page=lastPage)
         
         if subject == 'social studies':
-            save_loc = f'textbooks/{class_level}/SocialStudies/textbook chapters'
+            save_loc = f'textbooks/{class_level}/SocialStudies/textbook_chapters'
         else:
-            save_loc = f'textbooks/{class_level}/{subject}/textbook chapters'
+            save_loc = f'textbooks/{class_level}/{subject}/textbook_chapters'
         
         os.makedirs(save_loc, exist_ok=True)
         save_name = f"{chapter['_id']}.pdf"
@@ -76,9 +76,9 @@ for chapter in collection.find():
             nchapter_pdf.insert_pdf(ntextbook_pdf, from_page=nfirstPage, to_page=nlastPage)
             
             if subject == 'social studies':
-                nsave_loc = f'textbooks/{class_level}/SocialStudies/textbook chapters - Nepali'
+                nsave_loc = f'textbooks/{class_level}/SocialStudies/textbook_chapters_Nepali'
             else:
-                nsave_loc = f'textbooks/{class_level}/{subject}/textbook chapters - Nepali'
+                nsave_loc = f'textbooks/{class_level}/{subject}/textbook_chapters_Nepali'
                 
             os.makedirs(nsave_loc, exist_ok=True)
             nsave_name = f"{chapter['_id']}-Nepali.pdf"
