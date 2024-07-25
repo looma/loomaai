@@ -82,3 +82,4 @@ for chapter in collection.find():
         tb = traceback.format_exc()
         print(f"Error: {e}")
         print(f"Traceback: {tb}")
+print("all textbook chapters have their own pdfs")
