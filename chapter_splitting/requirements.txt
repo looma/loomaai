@@ -1,6 +1,2 @@
-io
-os
-re
 fitz
-requests
 pymongo
