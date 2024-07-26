@@ -4,7 +4,7 @@ streamlit
 streamlit_chat
 openai
 langchain-core
-langchain_community
+langchain_community==0.2.6
 langchain
 langchain-text-splitters
 faiss-cpu
@@ -14,6 +14,6 @@ langchain_postgres
 langchain-chroma
 pymupdf
 pymupdf4llm
-fastembed
+fastembed==0.3.2
 chromadb
 langchain_ollama
