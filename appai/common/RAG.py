@@ -19,7 +19,7 @@ class gen:
     def loadPDF(self, pdfPath):
         pdf = PyMuPDFLoader(pdfPath).load()
         chunks = self.textSplitter.split_documents(pdf)
-        embedding_func = OllamaEmbeddings(model="llama3")
+        embedding_func = FastEmbedEmbeddings() #OllamaEmbeddings(model="llama3")
         vectorStore = Chroma.from_documents(chunks, embedding=embedding_func)
         self.retriever = vectorStore.as_retriever(search_type = "similarity_score_threshold", search_kwargs={"k": 3, "score_threshold": 0.2,})
 
@@ -31,7 +31,6 @@ class gen:
 
 """ Test Code 
 test = gen()
-test.clear()
-test.loadPDF("./Addition.pdf")
+test.loadPDF("/Users/connorlee/Documents/GitHub/loomaai/textbooks/Class10/Math/textbook_chapters/10M01.pdf")
 print(test.ask("What are the types of numbers in math 50 words"))
 """

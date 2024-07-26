@@ -1,8 +1,11 @@
 import os
+import sys
 import tempfile
 import streamlit as st
 from streamlit_chat import message
-from common.RAG import gen
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from common.RAG import *
 import tempfile
 
 def filePath(file):
@@ -30,5 +33,8 @@ def page():
     response = model.ask(query)
 
     st.write(response)
+
+def dropDown(): 
+    st
 
 page()
