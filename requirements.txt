@@ -12,8 +12,8 @@ langchain-openai
 tiktoken
 langchain_postgres
 langchain-chroma
-pymupdf
-pymupdf4llm
+#pymupdf
+#pymupdf4llm
 fastembed
 chromadb
 pymongo
