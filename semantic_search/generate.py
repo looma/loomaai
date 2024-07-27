@@ -26,7 +26,7 @@ db = client.get_database("looma")
 collection = db.get_collection("chapters")
 
 faiss_db = None
-Path('faiss_index').mkdir(parents=True, exist_ok=True)
+Path('../loomadata/vector_db').mkdir(parents=True, exist_ok=True)
 
 for chapter in collection.find({"pn": {"$ne": ""}}):
     try:
@@ -52,7 +52,7 @@ for chapter in collection.find({"pn": {"$ne": ""}}):
         if faiss_db is None:
             faiss_db = FAISS.from_documents(final_docs, hf)
         faiss_db.add_documents(final_docs)
-        faiss_db.save_local("faiss_index")
+        faiss_db.save_local("../loomadata/vector_db")
         print("[Added document to FAISS]", url, firstPage, lastPage)
     except Exception as e:
-        print("Error: ", e)
+        print("Error: ", e, "Chapter:", chapter["_id"])
