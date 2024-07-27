@@ -1,8 +1,9 @@
-langchain_community
+langchain_community==0.2.6
 langchain_core
 langchain
 pypdf
-fastembed
+pymupdf
+fastembed==0.3.2
 chromadb
 streamlit
 streamlit_chat
