@@ -16,4 +16,6 @@ pymupdf
 pymupdf4llm
 fastembed
 chromadb
+pymongo
+sentence-transformers
 langchain_ollama
