@@ -1,5 +1,7 @@
 import streamlit as st
 
+from appai.common.query_faiss import query
+
 st.title("Looma Content Search")
 
 if "messages" not in st.session_state:
@@ -12,6 +14,4 @@ for message in st.session_state.messages:
 if prompt := st.chat_input("Search Message ..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
-        st.markdown(prompt)
-
-st.selectbox("Select DataContext: ", ("Chapters4-10", "Chapters1-3"))
+        st.json(query(prompt))
