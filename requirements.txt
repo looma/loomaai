@@ -6,6 +6,7 @@ openai
 langchain-core
 langchain_community
 langchain
+langchain-text-splitters
 faiss-cpu
 langchain-openai
 tiktoken
@@ -17,3 +18,4 @@ fastembed
 chromadb
 pymongo
 sentence-transformers
+langchain_ollama
