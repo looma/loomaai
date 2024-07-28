@@ -16,7 +16,7 @@ $(LAIC_IMAGE):
 	$(DOCKER) build -t $(LAIC_IMAGE) -f Dockerfile .
 
 run: $(DATAVOL)
-	$(DOCKER) run -tid -p 4700:4700 -p 11434 \
+	$(DOCKER) run -tid -p 4700:4700 -p 11434:11434 \
 		-v $(DATAVOL):/app/data --name $(LAIC_CTR) $(LAIC_IMAGE)
 $(DATAVOL):
 	mkdir -p $(DATAVOL)
