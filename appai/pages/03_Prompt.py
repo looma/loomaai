@@ -34,7 +34,7 @@ def page():
 
     if file_path is not None:
         model = gen()
-        model.loadPDF(file_path)
+        model.makeChain(file_path)
 
         response = model.ask(query)
 
