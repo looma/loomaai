@@ -18,7 +18,7 @@ $(LAIC_IMAGE):
 run: $(DATAVOL)
 	$(DOCKER) run -tid -p 4700:4700 \
 		-v $(DATAVOL):/app/data \
-		-v appai:/app/appai --name $(LAIC_CTR) $(LAIC_IMAGE)
+		-v ./appai:/app/appai --name $(LAIC_CTR) $(LAIC_IMAGE)
 $(DATAVOL):
 	mkdir -p $(DATAVOL)
 	mkdir -p $(DATAVOL)/models
