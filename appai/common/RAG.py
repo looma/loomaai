@@ -16,7 +16,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 class gen: 
     def __init__(self):
-        self.llm = ChatOllama(model="phi3")
+        self.llm = ChatOllama(model="llama3")
         self.prompt = PromptTemplate.from_template("Question: {question} \n Context: {context}")
         self.textSplitter = RecursiveCharacterTextSplitter(chunk_size = 200, chunk_overlap = 20)
 
@@ -43,7 +43,9 @@ class gen:
         #vectorStore = Chroma.from_documents(chunks, embedding=embedding_func)
 
         # Faiss vector store
-        vectorStore = FAISS.load_local("../../loomadata/vector_db", embedding_func, allow_dangerous_deserialization=True)
+        #path = "../../loomadata/vector_db"
+        path = "/app/data/vector_db"
+        vectorStore = FAISS.load_local(path, embedding_func, allow_dangerous_deserialization=True)
 
         self.retriever = vectorStore.as_retriever(search_type = "similarity_score_threshold", search_kwargs={"k": 3, "score_threshold": 0.1,})
 
@@ -54,8 +56,8 @@ class gen:
         return self.chain.invoke(query)
 
 
-#""" Test Code 
+""" Test Code 
 test = gen()
 test.makeChain("/Users/connorlee/Documents/GitHub/loomaai/appai/textbooks/Class10/Math/textbook_chapters/10M01.pdf")
 print(test.ask("Can you give me a summary in 50 words"))
-#"""
+"""
