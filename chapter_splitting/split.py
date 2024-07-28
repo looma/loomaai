@@ -54,7 +54,7 @@ for chapter in collection.find():
         textbook_pdf = fitz.open(stream=pdf)
         chapter_pdf.insert_pdf(textbook_pdf, from_page=firstPage, to_page=lastPage)
 
-        save_loc = f'../{textbook["fp"]}textbook_chapters'
+        save_loc = f'../loomadata/{textbook["fp"]}textbook_chapters'
         
         os.makedirs(save_loc, exist_ok=True)
         save_name = f"{chapter['_id']}.pdf"
@@ -71,7 +71,7 @@ for chapter in collection.find():
             ntextbook_pdf = fitz.open(stream=pdf2)
             nchapter_pdf.insert_pdf(ntextbook_pdf, from_page=nfirstPage, to_page=nlastPage)
             
-            nsave_loc = f'../{textbook["fp"]}textbook_chapters_nepali'
+            nsave_loc = f'../loomadata/{textbook["fp"]}textbook_chapters_nepali'
                 
             os.makedirs(nsave_loc, exist_ok=True)
             nsave_name = f"{chapter['_id']}-nepali.pdf"
