@@ -3,6 +3,10 @@ import streamlit as st
 from appai.common.query_faiss import query
 from streamlit_pdf_viewer import pdf_viewer
 
+from common.config import *
+# from common.files import *
+# from common.utils import *
+
 st.title("Looma Content Search")
 
 if "messages" not in st.session_state:
@@ -18,4 +22,7 @@ if prompt := st.chat_input("Search Message ..."):
         results = query(prompt)
         st.json([e.dict()["metadata"] for e in results])
         for e in results:
-            pdf_viewer(e.dict()["metadata"]["source"])
+            cfg = ConfigInit()
+            if 'datadir' not in st.session_state:
+                st.session_state['datadir'] = cfg.getv("datadir")
+            pdf_viewer(st.session_state['datadir'] + "/" + e.dict()["metadata"]["source"])
