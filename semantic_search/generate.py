@@ -40,14 +40,15 @@ for chapter in collection.find({"pn": {"$ne": ""}}):
             continue
         textbook = db.textbooks.find_one({"prefix": grade_level + subject})
 
-        url = f"../{textbook['fp']}textbook_chapters/{chapter['_id']}.pdf"
+        url = f"../data/{textbook['fp']}textbook_chapters/{chapter['_id']}.pdf"
         text = ""
         with fitz.open(filename=url) as doc:
             for page in doc.pages():
                 text += page.get_text()
 
         final_docs = [
-            Document(page_content=text, metadata={"source": url, "firstPage": firstPage, "lastPage": lastPage})]
+            Document(page_content=text, metadata={"source": f"{textbook['fp']}textbook_chapters/{chapter['_id']}.pdf",
+                                                  "firstPage": firstPage, "lastPage": lastPage})]
 
         if faiss_db is None:
             faiss_db = FAISS.from_documents(final_docs, hf)
