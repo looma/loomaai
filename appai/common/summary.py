@@ -1,5 +1,3 @@
-from langchain_community.llms import Ollama
-from langchain_openai import ChatOpenAI
 from langchain.chains.summarize import load_summarize_chain
 from langchain_community.document_loaders import PyPDFLoader
 
