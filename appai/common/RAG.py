@@ -9,23 +9,48 @@ from langchain.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.schema.runnable import RunnablePassthrough
+from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.vectorstores import FAISS
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 class gen: 
     def __init__(self):
-        self.llm = ChatOllama(model="phi3")
+        self.llm = ChatOllama(model="llama3")
         self.prompt = PromptTemplate.from_template("Question: {question} \n Context: {context}")
         self.textSplitter = RecursiveCharacterTextSplitter(chunk_size = 200, chunk_overlap = 20)
 
-    def loadPDF(self, pdfPath):
+    def makeChain(self, pdfPath):
         pdf = PyMuPDFLoader(pdfPath).load()
         chunks = self.textSplitter.split_documents(pdf)
-        embedding_func = FastEmbedEmbeddings() #OllamaEmbeddings(model="llama3")
-        vectorStore = Chroma.from_documents(chunks, embedding=embedding_func)
-        self.retriever = vectorStore.as_retriever(search_type = "similarity_score_threshold", search_kwargs={"k": 3, "score_threshold": 0.2,})
+        
+        # FastEmbed embeddings
+        #embedding_func = FastEmbedEmbeddings() #OllamaEmbeddings(model="llama3")
+
+        # Hugging Face Embeddings
+        
+        model_name = "sentence-transformers/all-mpnet-base-v2"
+        model_kwargs = {}
+        encode_kwargs = {'normalize_embeddings': False}
+        embedding_func = HuggingFaceEmbeddings(
+            model_name=model_name,
+            model_kwargs=model_kwargs,
+            encode_kwargs=encode_kwargs)
+           
+
+
+        # Chroma vector store
+        #vectorStore = Chroma.from_documents(chunks, embedding=embedding_func)
+
+        # Faiss vector store
+        #path = "../../loomadata/vector_db"
+        path = "/app/data/vector_db"
+        vectorStore = FAISS.load_local(path, embedding_func, allow_dangerous_deserialization=True)
+
+        self.retriever = vectorStore.as_retriever(search_type = "similarity_score_threshold", search_kwargs={"k": 3, "score_threshold": 0.1,})
 
         self.chain = {"context" : self.retriever , "question" : RunnablePassthrough()} | self.prompt | self.llm | StrOutputParser() 
+
 
     def ask(self, query: str): 
         return self.chain.invoke(query)
@@ -33,6 +58,6 @@ class gen:
 
 """ Test Code 
 test = gen()
-test.loadPDF("/Users/connorlee/Documents/GitHub/loomaai/textbooks/Class10/Math/textbook_chapters/10M01.pdf")
-print(test.ask("What are the types of numbers in math 50 words"))
+test.makeChain("/Users/connorlee/Documents/GitHub/loomaai/appai/textbooks/Class10/Math/textbook_chapters/10M01.pdf")
+print(test.ask("Can you give me a summary in 50 words"))
 """

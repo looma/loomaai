@@ -1,6 +1,0 @@
-io
-os
-re
-pymupdf
-requests
-pymongo
