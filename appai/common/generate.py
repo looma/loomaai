@@ -7,7 +7,7 @@ from langchain_community.vectorstores import FAISS
 from langchain.docstore.document import Document
 from pathlib import Path
 
-from chapter_summaries.summary import extract_text, query_llm
+from summary import extract_text, query_llm
 
 def generate_vectors(llm):
     model_name = "sentence-transformers/all-mpnet-base-v2"
