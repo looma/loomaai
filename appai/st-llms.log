@@ -1,0 +1,27 @@
+2024-08-03 19:07:57.923 Uncaught app exception
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/site-packages/langchain_community/document_loaders/pdf.py", line 359, in __init__
+    import fitz  # noqa:F401
+    ^^^^^^^^^^^
+ModuleNotFoundError: No module named 'fitz'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 75, in exec_func_with_error_handling
+    result = func()
+             ^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 574, in code_to_exec
+    exec(code, module.__dict__)
+  File "/app/appai/pages/03_Prompt.py", line 94, in <module>
+    main()
+  File "/app/appai/pages/03_Prompt.py", line 90, in main
+    page()
+  File "/app/appai/pages/03_Prompt.py", line 37, in page
+    model.makeChain(file_path)
+  File "/app/appai/common/RAG.py", line 24, in makeChain
+    pdf = PyMuPDFLoader(pdfPath).load()
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/langchain_community/document_loaders/pdf.py", line 361, in __init__
+    raise ImportError(
+ImportError: `PyMuPDF` package not found, please install it with `pip install pymupdf`
