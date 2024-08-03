@@ -9,7 +9,9 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import tempfile
 
 def main():
-    st.title("Title")
+    st.title("Page Summarizer")
+    st.write("Page")
+    st.write("Page")
 
 if __name__ == "__main__":
     main()
