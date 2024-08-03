@@ -40,7 +40,7 @@ for chapter in collection.find({"pn": {"$ne": ""}}):
             continue
         textbook = db.textbooks.find_one({"prefix": grade_level + subject})
 
-        url = f"../{textbook['fp']}textbook_chapters/{chapter['_id']}.pdf"
+        url = f"../appai/{textbook['fp']}textbook_chapters/{chapter['_id']}.pdf"
         text = ""
         with fitz.open(filename=url) as doc:
             for page in doc.pages():
