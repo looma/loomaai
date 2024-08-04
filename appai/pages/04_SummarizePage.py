@@ -3,10 +3,11 @@ import sys
 import tempfile
 import streamlit as st
 from streamlit_chat import message
+from common.config import *
+from langchain_openai import ChatOpenAI
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from common.summary import *
-import tempfile
 
 def filePath(file):
     with tempfile.NamedTemporaryFile(delete=False) as tf:
@@ -15,8 +16,8 @@ def filePath(file):
             file_path = tf.name
             return file_path
 
-def fileUpload():
-    uploaded_file = st.file_uploader('Choose your .pdf file', type="pdf")    
+def fileUpload(key):
+    uploaded_file = st.file_uploader('Choose your .pdf file', type="pdf", key=key)    
     file_path = None
     if filePath(uploaded_file) is not None:
         file_path = filePath(uploaded_file)
@@ -26,7 +27,16 @@ def fileUpload():
 def main():
     st.title("Page Summarizer")
 
-    fileUpload()
+    llm = ChatOpenAI(temperature=0, model_name="gpt-3.5-turbo-1106")
+    
+    file = fileUpload("04_1")
+    file_path = None if file is None else file
+
+    pages = extract_text(file_path)
+    st.write(pages)
+    summary = query_llm(llm, pages, 50)
+
+    st.write(summary)
 
 if __name__ == "__main__":
     main()
