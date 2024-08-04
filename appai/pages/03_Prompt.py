@@ -3,6 +3,7 @@ import sys
 import tempfile
 import streamlit as st
 from streamlit_chat import message
+#st.set_option('client.showErrorDetails', False)
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from common.RAG import *
@@ -15,8 +16,8 @@ def filePath(file):
             file_path = tf.name
             return file_path
     
-def fileUpload():
-    uploaded_file = st.file_uploader('Choose your .pdf file', type="pdf")    
+def fileUpload(key):
+    uploaded_file = st.file_uploader('Choose your .pdf file', type="pdf", key=key)    
     file_path = None
     if filePath(uploaded_file) is not None:
         file_path = filePath(uploaded_file)
@@ -80,7 +81,8 @@ def choice():
     choice = st.radio("Choose an option:", ("Upload a file", "Choose existing textbook"))
 
     if choice == "Upload a file":
-        file_path = None if fileUpload() is None else fileUpload()
+        uploaded = fileUpload("03_1")
+        file_path = None if uploaded is None else uploaded
     else:
         file_path = textbooks()
 
