@@ -6,7 +6,6 @@ from streamlit_chat import message
 from common.config import *
 from langchain_openai import ChatOpenAI
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from common.summary import *
 
 def filePath(file):
@@ -26,9 +25,11 @@ def fileUpload(key):
 
 def main():
     st.title("Page Summarizer")
+    cfg = ConfigInit()
+    openai_api_key = cfg.getv("openai_api_key")
+    print(openai_api_key)
+    llm = ChatOpenAI(temperature=0, model_name="gpt-4o", api_key=openai_api_key)
 
-    llm = ChatOpenAI(temperature=0, model_name="gpt-3.5-turbo-1106")
-    
     file = fileUpload("04_1")
     file_path = None if file is None else file
 
