@@ -27,7 +27,6 @@ def main():
     st.title("Page Summarizer")
     cfg = ConfigInit()
     openai_api_key = cfg.getv("openai_api_key")
-    print(openai_api_key)
     llm = ChatOpenAI(temperature=0, model_name="gpt-4o", api_key=openai_api_key)
 
     file = fileUpload("04_1")
