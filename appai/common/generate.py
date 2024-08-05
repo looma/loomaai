@@ -7,9 +7,9 @@ from langchain_community.vectorstores import FAISS
 from langchain.docstore.document import Document
 from pathlib import Path
 
-from summary import extract_text, query_llm
+from common.summary import extract_text, query_llm
 
-def generate_vectors(llm):
+def generate_vectors(llm, mongo_client: MongoClient, data_dir: str):
     model_name = "sentence-transformers/all-mpnet-base-v2"
     model_kwargs = {}
     encode_kwargs = {'normalize_embeddings': False}
@@ -19,12 +19,11 @@ def generate_vectors(llm):
         encode_kwargs=encode_kwargs
     )
 
-    client = MongoClient("mongodb://localhost:47017/")
-    db = client.get_database("looma")
+    db = mongo_client.get_database("looma")
     collection = db.get_collection("chapters")
 
     faiss_db = None
-    Path('../loomadata/vector_db').mkdir(parents=True, exist_ok=True)
+    Path(f'{data_dir}/vector_db').mkdir(parents=True, exist_ok=True)
 
     for chapter in collection.find({"pn": {"$ne": ""}}):
         try:
@@ -38,14 +37,14 @@ def generate_vectors(llm):
                 continue
             textbook = db.textbooks.find_one({"prefix": grade_level + subject})
 
-            url = f"../{textbook['fp']}textbook_chapters/{chapter['_id']}.pdf"
+            url = f"{data_dir}/{textbook['fp']}textbook_chapters/{chapter['_id']}.pdf"
             text = extract_text(url)
             summary = query_llm(llm, text)
             final_docs = [Document(page_content=summary, metadata={"source": url, "firstPage": firstPage, "lastPage": lastPage})]
             if faiss_db is None:
                 faiss_db = FAISS.from_documents(final_docs, hf)
             faiss_db.add_documents(final_docs)
-            faiss_db.save_local("../loomadata/vector_db")
+            faiss_db.save_local(f"{data_dir}/vector_db")
             print("[Added document to FAISS]", url, firstPage, lastPage)
         except Exception as e:
             print("Error: ", e, "Chapter:", chapter["_id"])
