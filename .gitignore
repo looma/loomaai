@@ -1,4 +1,4 @@
-loomadata/
+data/
 *.log
 __pycache__/
 textbooks
