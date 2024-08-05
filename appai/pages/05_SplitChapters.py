@@ -20,10 +20,7 @@ st.set_page_config(page_title="Split Chapter PDFs", page_icon=os.path.join('imag
                    menu_items=None)
 
 import streamlit as st
-import sys
-
-# Streamlit app code
-st.title("Function Output Viewer")
+st.title("Split Chapter PDFs")
 
 if st.button("Embed Chapters"):
     cfg = ConfigInit()
