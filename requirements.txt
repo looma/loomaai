@@ -19,3 +19,4 @@ chromadb
 pymongo
 sentence-transformers
 langchain_ollama
+streamlit-pdf-viewer
