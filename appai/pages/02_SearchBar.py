@@ -1,8 +1,12 @@
+import os
+import sys
+
 import streamlit as st
 
-from appai.common.query_faiss import query
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from streamlit_pdf_viewer import pdf_viewer
 
+from common.query_faiss import query
 from common.config import *
 # from common.files import *
 # from common.utils import *
