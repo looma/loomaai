@@ -18,3 +18,7 @@ fi
 if [ ! -d /app/data/files ]; then
     mkdir -p /app/data/files
 fi
+
+if [ ! -d /app/data/vector_db ]; then
+    mkdir -p /app/data/vector_db
+fi

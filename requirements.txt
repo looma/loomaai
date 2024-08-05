@@ -13,7 +13,7 @@ tiktoken
 langchain_postgres
 langchain-chroma
 pymupdf
-#pymupdf4llm
+pymupdf4llm
 fastembed==0.3.2
 chromadb
 pymongo

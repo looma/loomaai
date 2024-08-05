@@ -22,8 +22,6 @@ COPY .env /app/appai/.env
 
 #
 RUN mkdir -p /root/.streamlit
-COPY dotstreamlit/secrets.toml /root/.streamlit
-COPY dotstreamlit/credentials.toml /root/.streamlit
 COPY dotstreamlit/config.toml /root/.streamlit
 
 

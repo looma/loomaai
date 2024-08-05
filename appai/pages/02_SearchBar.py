@@ -9,9 +9,6 @@ from common.config import *
 
 st.title("Looma Content Search")
 
-cfg = ConfigInit()
-data_dir = cfg.getv("datadir")
-
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
@@ -22,7 +19,10 @@ for message in st.session_state.messages:
 if prompt := st.chat_input("Search Message ..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
-        results = query(prompt, data_dir)
+        results = query(prompt)
         st.json([e.dict()["metadata"] for e in results])
         for e in results:
-            pdf_viewer(data_dir + "/files/chapters/" + e.dict()["metadata"]["source"])
+            cfg = ConfigInit()
+            if 'datadir' not in st.session_state:
+                st.session_state['datadir'] = cfg.getv("datadir")
+            pdf_viewer(st.session_state['datadir'] + "/" + e.dict()["metadata"]["source"])
