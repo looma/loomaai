@@ -14,10 +14,10 @@ if [ -f /usr/local/bin/ollama ]; then
     /usr/local/bin/ollama serve &
 fi
 
-echo "Pull Models"
-if [ -f /app/pull.sh ]; then
-    /app/pull.sh
-fi
+#echo "Pull Models"
+#if [ -f /app/pull.sh ]; then
+#    /app/pull.sh
+#fi
 
 echo "looma ai app"
 if [ -f /app/appai/main.py ]; then

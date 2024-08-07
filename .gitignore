@@ -1,6 +1,8 @@
-loomadata/
-test.log
+data/
+*.log
 __pycache__/
 textbooks
-
+config.json
 venv
+env
+appai/textbooks
