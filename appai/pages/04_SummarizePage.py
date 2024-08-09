@@ -5,7 +5,6 @@ import streamlit as st
 from streamlit_chat import message
 from common.config import *
 from langchain_openai import ChatOpenAI
-
 from common.summary import *
 
 def filePath(file):
@@ -31,12 +30,14 @@ def main():
 
     file = fileUpload("04_1")
     file_path = None if file is None else file
-
-    pages = extract_text(file_path)
-    st.write(pages)
-    summary = query_llm(llm, pages, 50)
-
-    st.write(summary)
+    
+    languages = ['Nepali', "English"]
+    chapter_language = st.selectbox("Language: ", languages)
+       
+    if st.button("Summarize"):
+        pages = extract_text(file_path, chapter_language)
+        summary = query_llm(llm, pages, chapter_language)
+        st.write(summary)
 
 if __name__ == "__main__":
     main()
