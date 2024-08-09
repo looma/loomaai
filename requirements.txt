@@ -20,3 +20,5 @@ pymongo
 sentence-transformers
 langchain_ollama
 streamlit-pdf-viewer
+multilingual_pdf2text
+pytesseract
