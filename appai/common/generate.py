@@ -38,8 +38,8 @@ def generate_vectors(llm, mongo_client: MongoClient, data_dir: str):
             textbook = db.textbooks.find_one({"prefix": grade_level + subject})
 
             url = f"{data_dir}/{textbook['fp']}textbook_chapters/{chapter['_id']}.pdf"
-            text = extract_text(url)
-            summary = query_llm(llm, text)
+            text = extract_text(url, "English")
+            summary = query_llm(llm, text, "English")
             final_docs = [Document(page_content=summary, metadata={"source": url, "firstPage": firstPage, "lastPage": lastPage})]
             if faiss_db is None:
                 faiss_db = FAISS.from_documents(final_docs, hf)

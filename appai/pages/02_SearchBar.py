@@ -22,11 +22,9 @@ for message in st.session_state.messages:
 
 if prompt := st.chat_input("Search Message ..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
+    cfg = ConfigInit()
     with st.chat_message("user"):
-        results = query(prompt)
+        results = query(prompt, cfg.getv('datadir'))
         st.json([e.dict()["metadata"] for e in results])
         for e in results:
-            cfg = ConfigInit()
-            if 'datadir' not in st.session_state:
-                st.session_state['datadir'] = cfg.getv("datadir")
-            pdf_viewer(st.session_state['datadir'] + "/" + e.dict()["metadata"]["source"])
+            pdf_viewer(cfg.getv('datadir') + "/" + e.dict()["metadata"]["source"])
