@@ -20,7 +20,7 @@ def extract_text(pdf_path, chapter_language: str):
             doc.page_content += text
         return doc
     elif chapter_language == "English":
-        pages = PyMuPDFLoader(pdf_path, extract_images=True).load()
+        pages = PyMuPDFLoader(pdf_path, extract_images=False).load()
         return pages
 
 def query_llm(llm, pages, chapter_language):
