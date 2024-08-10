@@ -11,12 +11,17 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.schema.runnable import RunnablePassthrough
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
+from config import *
+from langchain_openai import ChatOpenAI
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 class gen: 
     def __init__(self):
-        self.llm = ChatOllama(model="llama3")
+        cfg = ConfigInit()
+        openai_api_key = cfg.getv("openai_api_key")
+        self.llm = ChatOpenAI(temperature=0, model_name="gpt-4o", api_key=openai_api_key)
+        #self.llm = ChatOllama(model="llama3")
         self.prompt = PromptTemplate.from_template("Question: {question} \n Context: {context}")
         self.textSplitter = RecursiveCharacterTextSplitter(chunk_size = 200, chunk_overlap = 20)
 
@@ -43,8 +48,8 @@ class gen:
         #vectorStore = Chroma.from_documents(chunks, embedding=embedding_func)
 
         # Faiss vector store
-        #path = "../../loomadata/vector_db"
-        path = "/app/data/vector_db"
+        path = "../../loomadata/vector_db"
+        #path = "/app/data/vector_db"
         vectorStore = FAISS.load_local(path, embedding_func, allow_dangerous_deserialization=True)
 
         self.retriever = vectorStore.as_retriever(search_type = "similarity_score_threshold", search_kwargs={"k": 3, "score_threshold": 0.1,})
@@ -56,8 +61,8 @@ class gen:
         return self.chain.invoke(query)
 
 
-""" Test Code 
+#""" Test Code 
 test = gen()
 test.makeChain("/Users/connorlee/Documents/GitHub/loomaai/appai/textbooks/Class10/Math/textbook_chapters/10M01.pdf")
 print(test.ask("Can you give me a summary in 50 words"))
-"""
+#"""
