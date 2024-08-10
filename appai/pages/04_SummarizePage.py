@@ -23,10 +23,23 @@ def fileUpload(key):
     return file_path
 
 def main():
+
+    try:
+        cfg = ConfigInit()
+    except Exception as e:
+        st.error(str(e))
+
     st.title("Page Summarizer")
+
     cfg = ConfigInit()
+
     openai_api_key = cfg.getv("openai_api_key")
-    llm = ChatOpenAI(temperature=0, model_name="gpt-4o", api_key=openai_api_key)
+
+    if not openai_api_key:
+        st.warning("Please enter your OpenAI API key.")
+        st.stop()
+
+    llm = ChatOpenAI(temperature=0, model_name="gpt-4o-mini", api_key=openai_api_key)
 
     file = fileUpload("04_1")
     file_path = None if file is None else file
@@ -38,6 +51,8 @@ def main():
         pages = extract_text(file_path, chapter_language)
         summary = query_llm(llm, pages, chapter_language)
         st.write(summary)
+    else:
+        st.warning("Please upload a PDF file.")
 
 if __name__ == "__main__":
     main()
