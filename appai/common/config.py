@@ -25,9 +25,10 @@ class Config:
 
 def ConfigInit():
     logzero.logfile("loomaai.log")
-    home = str(Path.home())
-    filename = home + "/.config/loomaai/config.json"
-    cfg = Config(filename)
+    #home = str(Path.home())
+    #print(str(Path.home()) + " PATH HOME")
+    #filename = home + "/.config/loomaai/config.json"
+    cfg = Config("/Users/connorlee/Documents/GitHub/loomaai/config.json") #filename)
     logger.debug("LoomaAI initialized")
     return cfg
 
