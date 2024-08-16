@@ -10,4 +10,4 @@ args = parser.parse_args()
 
 llm = ChatOpenAI(temperature=0, model_name="gpt-4o", api_key=args.apikey)
 client = MongoClient("mongodb://localhost:47017/")
-generate_vectors(llm=llm, mongo_client=client, data_dir="data/files/chapters")
+generate_vectors(llm=llm, mongo_client=client, data_dir="data")
