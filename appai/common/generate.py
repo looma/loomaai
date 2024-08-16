@@ -37,11 +37,11 @@ def generate_vectors(llm, mongo_client: MongoClient, data_dir: str):
             if firstPage == "" or lastPage == "":
                 continue
             textbook = db.textbooks.find_one({"prefix": grade_level + subject})
-
-            url = f"{data_dir}/{textbook['fp']}textbook_chapters/{chapter['_id']}.pdf"
+            subpath = f"/files/chapters/{textbook['fp']}textbook_chapters/{chapter['_id']}.pdf"
+            url = f"{data_dir}{subpath}"
             text = extract_text_from_pdf(url, "English")
             summary = summarize_text(llm, text, "English")
-            final_docs = [Document(page_content=summary, metadata={"source": url, "firstPage": firstPage, "lastPage": lastPage})]
+            final_docs = [Document(page_content=summary, metadata={"source": subpath, "firstPage": firstPage, "lastPage": lastPage})]
             if faiss_db is None:
                 faiss_db = FAISS.from_documents(final_docs, hf)
             faiss_db.add_documents(final_docs)
