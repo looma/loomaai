@@ -2,7 +2,7 @@ import re
 
 from pymongo import MongoClient
 
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain.docstore.document import Document
 from pathlib import Path
@@ -24,8 +24,9 @@ def generate_vectors(llm, mongo_client: MongoClient, data_dir: str):
 
     faiss_db = None
     Path(f'{data_dir}/vector_db').mkdir(parents=True, exist_ok=True)
-
-    for chapter in collection.find({"pn": {"$ne": ""}}):
+    chapters = collection.find({"pn": {"$ne": ""}})
+    print(f'{collection.count_documents({"pn": {"$ne": ""}})} documents to be processed')
+    for i, chapter in enumerate(chapters):
         try:
             groups = re.search(r"([1-9]|10|11|12)(EN|ENa|Sa|S|SF|Ma|M|SSa|SS|N|H|V|CS)[0-9]{2}(\.[0-9]{2})?",
                                chapter['_id'], re.IGNORECASE)
@@ -45,6 +46,6 @@ def generate_vectors(llm, mongo_client: MongoClient, data_dir: str):
                 faiss_db = FAISS.from_documents(final_docs, hf)
             faiss_db.add_documents(final_docs)
             faiss_db.save_local(f"{data_dir}/vector_db")
-            print("[Added document to FAISS]", url, firstPage, lastPage)
+            print(f"[{i}] [Added document to FAISS]", url, firstPage, lastPage)
         except Exception as e:
             print("Error: ", e, "Chapter:", chapter["_id"])
