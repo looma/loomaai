@@ -7,7 +7,7 @@ from langchain_community.vectorstores import FAISS
 from langchain.docstore.document import Document
 from pathlib import Path
 
-from common.summary import extract_text, query_llm
+from summary import extract_text_from_pdf, summarize_text
 
 def generate_vectors(llm, mongo_client: MongoClient, data_dir: str):
     model_name = "sentence-transformers/all-mpnet-base-v2"
@@ -38,8 +38,8 @@ def generate_vectors(llm, mongo_client: MongoClient, data_dir: str):
             textbook = db.textbooks.find_one({"prefix": grade_level + subject})
 
             url = f"{data_dir}/{textbook['fp']}textbook_chapters/{chapter['_id']}.pdf"
-            text = extract_text(url, "English")
-            summary = query_llm(llm, text, "English")
+            text = extract_text_from_pdf(url, "English")
+            summary = summarize_text(llm, text, "English")
             final_docs = [Document(page_content=summary, metadata={"source": url, "firstPage": firstPage, "lastPage": lastPage})]
             if faiss_db is None:
                 faiss_db = FAISS.from_documents(final_docs, hf)
