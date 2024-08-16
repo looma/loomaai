@@ -22,3 +22,6 @@ langchain_ollama
 streamlit-pdf-viewer
 multilingual_pdf2text
 pytesseract
+langchain-huggingface==0.0.3
+numpy
+rapidocr-onnxruntime
