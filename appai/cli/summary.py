@@ -2,11 +2,9 @@ import os
 import sys
 import argparse 
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
-
 from langchain_openai import ChatOpenAI
-from appai.common.config import *
-from appai.common.summary import *
+from ..common.config import *
+from ..common.summary import *
 
 def summary(filename, lang: str):
     cfg = ConfigInit()

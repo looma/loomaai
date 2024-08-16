@@ -7,7 +7,7 @@ from langchain_community.vectorstores import FAISS
 from langchain.docstore.document import Document
 from pathlib import Path
 
-from summary import extract_text_from_pdf, summarize_text
+from .summary import extract_text_from_pdf, summarize_text
 
 def generate_vectors(llm, mongo_client: MongoClient, data_dir: str):
     model_name = "sentence-transformers/all-mpnet-base-v2"

@@ -1,14 +1,7 @@
-import os
-import sys
 import streamlit as st
-#from langchain_community.llms import OpenAI
 from langchain_openai.chat_models import ChatOpenAI
 from langchain_community.llms import Ollama 
 from langchain_core.output_parsers import StrOutputParser
-
-from logzero import logger
-
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from common.config import *
 
 st.title("LoomaAI Search")
