@@ -1,20 +1,12 @@
-import os
-import sys
 from langchain_community.vectorstores import Chroma
-from langchain_community.chat_models import ChatOllama
 from langchain_community.embeddings import FastEmbedEmbeddings
-#from langchain_ollama import OllamaEmbeddings
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.schema.runnable import RunnablePassthrough
-from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_community.vectorstores import FAISS
-from common.config import *
+from .config import *
 from langchain_openai import ChatOpenAI
-
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 class gen: 
     def __init__(self):

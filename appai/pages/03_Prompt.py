@@ -1,11 +1,6 @@
 import os
-import sys
-import tempfile
 import streamlit as st
-from streamlit_chat import message
-#st.set_option('client.showErrorDetails', False)
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from common.RAG import *
 import tempfile
 
