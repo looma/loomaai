@@ -28,6 +28,7 @@ def generate_vectors(llm, mongo_client: MongoClient, data_dir: str):
     print(f'{collection.count_documents({"pn": {"$ne": ""}})} documents to be processed')
     for i, chapter in enumerate(chapters):
         try:
+            print("started")
             groups = re.search(r"([1-9]|10|11|12)(EN|ENa|Sa|S|SF|Ma|M|SSa|SS|N|H|V|CS)[0-9]{2}(\.[0-9]{2})?",
                                chapter['_id'], re.IGNORECASE)
             grade_level = groups[1]  # grade level
@@ -40,12 +41,14 @@ def generate_vectors(llm, mongo_client: MongoClient, data_dir: str):
             subpath = f"/files/chapters/{textbook['fp']}textbook_chapters/{chapter['_id']}.pdf"
             url = f"{data_dir}{subpath}"
             text = extract_text_from_pdf(url, "English")
-            summary = summarize_text(llm, text, "English")
-            final_docs = [Document(page_content=summary, metadata={"source": subpath, "firstPage": firstPage, "lastPage": lastPage})]
+            print("extracted")
+            # summary = summarize_text(llm, text, "English")
+            final_docs = [Document(page_content=text, metadata={"source": subpath, "firstPage": firstPage, "lastPage": lastPage})]
             if faiss_db is None:
                 faiss_db = FAISS.from_documents(final_docs, hf)
             faiss_db.add_documents(final_docs)
             faiss_db.save_local(f"{data_dir}/vector_db")
+            print("saved")
             print(f"[{i}] [Added document to FAISS]", url, firstPage, lastPage)
         except Exception as e:
             print("Error: ", e, "Chapter:", chapter["_id"])
