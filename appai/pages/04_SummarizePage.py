@@ -58,6 +58,8 @@ def main():
                 translated_content = translate_text(llm, content, tolanguage)
                 st.info(translated_content)
 
+        summary = summarize_pdf(file_path, chapter_language, llm)
+        st.write(summary)
 
 if __name__ == "__main__":
     main()
