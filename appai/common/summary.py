@@ -5,6 +5,7 @@ from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 import pytesseract
 import os
+import fitz
 
 # Configuration for Tesseract OCR
 pytesseract.pytesseract.tesseract_cmd = r'/opt/homebrew/bin/tesseract'
@@ -21,8 +22,12 @@ def extract_text_nepali(pdf_path):
     return text_content
 
 def extract_text_english(pdf_path):
-    pages = PyMuPDFLoader(pdf_path, extract_images=True).load()
-    return ' '.join(page.page_content for page in pages)
+    pdf = fitz.open(pdf_path)
+    all_text = ''
+    for page in pdf:
+        text = page.get_text()
+        all_text += text
+    return all_text
 
 def extract_text_from_pdf(pdf_path, chapter_language):
     if chapter_language == "Nepali":
