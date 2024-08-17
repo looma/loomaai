@@ -34,8 +34,7 @@ def main():
     chapter_language = st.radio("Language of PDF: ", options=["Nepali", "English"])
        
     if st.button("Summarize"):
-        pages = extract_text(file_path, chapter_language)
-        summary = query_llm(llm, pages, chapter_language)
+        summary = summarize_pdf(file_path, chapter_language, llm)
         st.write(summary)
 
 if __name__ == "__main__":
