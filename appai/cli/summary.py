@@ -2,9 +2,11 @@ import os
 import sys
 import argparse 
 
+sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
+
 from langchain_openai import ChatOpenAI
-from ..common.config import *
-from ..common.summary import *
+from appai.common.config import *
+from appai.common.summary import *
 
 def summary(filename, lang: str):
     cfg = ConfigInit()
@@ -12,6 +14,13 @@ def summary(filename, lang: str):
     llm = ChatOpenAI(temperature=0, model_name="gpt-4o-mini", api_key=openai_api_key)
     summary = summarize_pdf(filename, lang, llm)
     print(summary)
+
+def translate(filename, lang: str):
+    cfg = ConfigInit()
+    openai_api_key = cfg.getv("openai_api_key")
+    llm = ChatOpenAI(temperature=0, model_name="gpt-4o-mini", api_key=openai_api_key)
+    translated_text = translate_pdf(filename, lang, llm)
+    print(translated_text)
 
 if __name__ == "__main__":
    # Create the parser
@@ -26,6 +35,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if args.command == "summary":
         summary(args.filename, args.language)
+    elif args.command == "translate":
+        translate(args.filename, args.language)
     else:
         print(f"Unknown command '{args.command}'")
-
