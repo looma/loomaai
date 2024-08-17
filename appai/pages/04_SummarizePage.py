@@ -33,10 +33,31 @@ def main():
     
     chapter_language = st.radio("Language of PDF: ", options=["Nepali", "English"])
        
+    if "summary_generated" not in st.session_state:
+        st.session_state["summary_generated"] = False
+
     if st.button("Summarize"):
-        pages = extract_text(file_path, chapter_language)
-        summary = query_llm(llm, pages, chapter_language)
-        st.write(summary)
+        if file_path is not None:
+            with st.spinner("Summarizing..."):
+                text_content = extract_text_from_pdf(file_path, chapter_language)
+                summary = summarize_text(llm, text_content, chapter_language)
+                st.session_state["content"] = summary
+                st.session_state["summary_generated"] = True
+                st.info(summary)
+        else:
+            st.error("Please upload a PDF file before summarizing.")
+
+    if st.session_state["summary_generated"]:
+        if st.button("Translate"):
+            if chapter_language == "Nepali":
+                tolanguage = "English"
+            else:
+                tolanguage = "Nepali"
+            with st.spinner("Translating..."):
+                content = st.session_state["content"]
+                translated_content = translate_text(llm, content, tolanguage)
+                st.info(translated_content)
+
 
 if __name__ == "__main__":
     main()
