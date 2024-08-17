@@ -1,8 +1,4 @@
-FROM python:3.12
-
-
-RUN apt update && apt upgrade -y
-RUN apt install -y vim bash git net-tools
+FROM python:3.12-slim
 
 RUN mkdir -p /app/data
 RUN chmod 777 /app/data
