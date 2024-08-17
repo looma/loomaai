@@ -40,7 +40,7 @@ def extract_text_from_pdf(pdf_path, chapter_language):
 def summarize_text(llm, text, chapter_language):
     summarize_prompt = PromptTemplate(
         input_variables=["text"],
-        template="Please summarize the following text in 50 words using the same language it is written in:\n{text}"
+        template="Please summarize the following text in one paragraph using the same language it is written in:\n{text}"
     )
     summarize_chain = summarize_prompt | llm | StrOutputParser()
     summary = summarize_chain.invoke({"text": text})
@@ -50,5 +50,19 @@ def summarize_pdf(pdf_path, chapter_language, llm):
     text_content = extract_text_from_pdf(pdf_path, chapter_language)
     summary = summarize_text(llm, text_content, chapter_language)
     return summary
+
+def translate_text(llm, text, tolanguage):
+    translate_prompt = PromptTemplate(
+            input_variables=["text"],
+            template="Please translate the following text:\n{text} to" + str(tolanguage)
+    )
+    translate_chain = translate_prompt | llm | StrOutputParser()
+    translated_text = translate_chain.invoke({"text": text})
+    return translated_text
+
+def translate_pdf(llm, pdf_path, language):
+    text_content = extract_text_from_pdf(pdf_path, "Nepali")
+    translated_content = translate_text(llm, text_content, language)
+    return translated_content
 
 
