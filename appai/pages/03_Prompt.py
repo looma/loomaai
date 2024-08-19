@@ -56,7 +56,7 @@ def textbooks():
     """
     Creates dropboxes with all the textbooks generated from split.py
     """
-    textbooks_path = os.path.join(os.path.join(os.path.dirname(__file__), '..'), 'textbooks')
+    textbooks_path = os.path.join(os.path.dirname(__file__), '../../data/files/chapters/textbooks/')
     files = os.listdir(textbooks_path) # Files of all textbooks 
 
     classes = [] # List for classes 
@@ -66,7 +66,7 @@ def textbooks():
 
     classSelected = st.selectbox("Class", (classes)) # Creates dropbox for classes
 
-    class_path = os.path.join(os.path.join(os.path.dirname(__file__), '../textbooks/'), classSelected) # Enters directory for class selected
+    class_path = os.path.join(os.path.join(os.path.dirname(__file__), '../../data/files/chapters/textbooks/'), classSelected) # Enters directory for class selected
     subjects = os.listdir(class_path) # Lists all files within dir
 
     subjects_available = [] # List for all subjects avaiable within selected class
@@ -76,7 +76,7 @@ def textbooks():
 
     subjectSelected = st.selectbox("Subject", (subjects_available)) # Creates dropbox for subjects 
 
-    subject_books_path = os.path.join(os.path.dirname(__file__), '../textbooks/' + classSelected + "/" + subjectSelected + "/textbook_chapters") # Enters directory of subject selected
+    subject_books_path = os.path.join(os.path.dirname(__file__), '../../data/files/chapters/textbooks/' + classSelected + "/" + subjectSelected + "/textbook_chapters") # Enters directory of subject selected
     subject_books = os.listdir(subject_books_path) # Lists all files within dir
 
     subject_books_available = [] # List for all books avaiable within subject dir
@@ -86,7 +86,7 @@ def textbooks():
 
     book_selected = st.selectbox("Book", (subject_books_available)) # Creates dropbox for book selection
 
-    return os.path.join(os.path.dirname(__file__), '../textbooks/' + classSelected + "/" + subjectSelected + "/textbook_chapters/" + book_selected) # Final file path for selected book
+    return os.path.join(os.path.dirname(__file__), '../../data/files/chapters/textbooks/' + classSelected + "/" + subjectSelected + "/textbook_chapters/" + book_selected) # Final file path for selected book
 
 def choice():
     """
