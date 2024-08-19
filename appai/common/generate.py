@@ -40,7 +40,8 @@ def generate_vectors(llm, mongo_client: MongoClient, data_dir: str):
             subpath = f"/files/chapters/{textbook['fp']}textbook_chapters/{chapter['_id']}.pdf"
             url = f"{data_dir}{subpath}"
             text = extract_text_from_pdf(url, "English")
-            final_docs = [Document(page_content=text, metadata={"source": subpath, "firstPage": firstPage, "lastPage": lastPage})]
+            summary = summarize_text(llm, text, "English")
+            final_docs = [Document(page_content=summary, metadata={"source": subpath, "firstPage": firstPage, "lastPage": lastPage})]
             if faiss_db is None:
                 faiss_db = FAISS.from_documents(final_docs, hf)
             faiss_db.add_documents(final_docs)
