@@ -85,7 +85,7 @@ def generate_vectors(llm, mongo_client: MongoClient, data_dir: str):
                 text = get_visible_text(url)
                 # summary = summarize_text(llm, text, "English")
                 final_docs = [Document(page_content=text,
-                                       metadata={"collection": "activities", "source_id": activity['_id']})]
+                                       metadata={"collection": "activities", "source_id": activity['_id'], "title": activity['dn']})]
                 if faiss_db is None:
                     faiss_db = FAISS.from_documents(final_docs, hf)
                 faiss_db.add_documents(final_docs)
