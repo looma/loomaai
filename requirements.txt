@@ -102,3 +102,5 @@ urllib3==2.2.2
 yarl==1.9.4
 fastembed==0.3.2
 faiss-cpu
+beautifulsoup4~=4.12.3
+PyMuPDF~=1.24.9
