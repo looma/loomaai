@@ -4,9 +4,18 @@ RUN mkdir -p /app/data
 RUN chmod 777 /app/data
 WORKDIR /app
 
+# need base updated and gcc installed because 
+# some python3 packages need it
+RUN apt update && apt upgrade -y
+RUN apt install gcc make -y
+
 COPY requirements.txt /app/requirements.txt
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
+
+# remove the gcc we used for package install 
+# and we do not need it in the final image
+RUN apt remove gcc make -y
 
 COPY bootup.sh /app/bootup.sh
 
