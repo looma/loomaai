@@ -4,22 +4,19 @@ import argparse
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 
-from langchain_openai import ChatOpenAI
 from appai.common.config import *
 from appai.common.summary import *
 
 def summary(filename, lang: str):
     cfg = ConfigInit()
-    openai_api_key = cfg.getv("openai_api_key")
-    llm = ChatOpenAI(temperature=0, model_name="gpt-4o-mini", api_key=openai_api_key)
-    summary = summarize_pdf(filename, lang, llm)
+    summarizer = Summary(cfg, filename)
+    summary = summarizer.summarize_pdf(lang)
     print(summary)
 
 def translate(filename, lang: str):
     cfg = ConfigInit()
-    openai_api_key = cfg.getv("openai_api_key")
-    llm = ChatOpenAI(temperature=0, model_name="gpt-4o-mini", api_key=openai_api_key)
-    translated_text = translate_pdf(filename, lang, llm)
+    translator = Summary(cfg, filename)
+    translated_text = translator.translate_pdf(lang)
     print(translated_text)
 
 if __name__ == "__main__":
