@@ -91,8 +91,10 @@ def generate_vectors(llm, mongo_client: MongoClient, data_dir: str):
                 faiss_db.add_documents(final_docs)
                 faiss_db.save_local(f"{data_dir}/vector_db")
                 print(f"[{i}] [Added document to FAISS]", url)
-    chapters = chapters_collection.find({"pn": {"$ne": ""}})
-    print(f'{chapters_collection.count_documents({"pn": {"$ne": ""}})} documents to be processed')
+                chapters = chapters_collection.find({"pn": {"$ne": ""}})
+                print(f'{chapters_collection.count_documents({"pn": {"$ne": ""}})} documents to be processed')
+        except Exception as e:
+            print("Error: ", e, "Chapter:", activity["_id"])
     for i, chapter in enumerate(chapters):
         try:
             groups = re.search(r"([1-9]|10|11|12)(EN|ENa|Sa|S|SF|Ma|M|SSa|SS|N|H|V|CS)[0-9]{2}(\.[0-9]{2})?",
