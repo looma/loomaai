@@ -49,8 +49,8 @@ def generate_vectors(llm, mongo_client: MongoClient, data_dir: str):
     chapters = chapters_collection.find({"pn": {"$ne": ""}})
     print(f'{chapters_collection.count_documents({"pn": {"$ne": ""}})} chapters to be processed')
 
-    activities = activities_collection.find({"pn": {"$ne": ""}})
-    print(f'{activities_collection.count_documents({"pn": {"$ne": ""}})} activities to be processed')
+    activities = activities_collection.find({"ft": "html"})
+    print(f'{activities_collection.count_documents({"ft": "html"})} activities to be processed')
 
     # for i, chapter in enumerate(chapters):
     #     try:
@@ -79,17 +79,25 @@ def generate_vectors(llm, mongo_client: MongoClient, data_dir: str):
 
     for i, activity in enumerate(activities):
         try:
-            if activity['ft'] == 'html':
-                url = f"http://looma.website/{activity['fp']}{activity['fn']}"
-                print(url)
-                text = get_visible_text(url)
-                # summary = summarize_text(llm, text, "English")
-                final_docs = [Document(page_content=text,
-                                       metadata={"collection": "activities", "source_id": activity['_id'], "title": activity['dn']})]
-                if faiss_db is None:
-                    faiss_db = FAISS.from_documents(final_docs, hf)
-                faiss_db.add_documents(final_docs)
-                faiss_db.save_local(f"{data_dir}/vector_db")
-                print(f"[{i}] [Added document to FAISS]", url)
+            match activity['ft']:
+                case "html":
+                    url = f"http://looma.website/{activity['fp']}{activity['fn']}"
+                    print(url)
+                    text = get_visible_text(url)
+                    # summary = summarize_text(llm, text, "English")
+                    final_docs = [Document(page_content=text,
+                                           metadata={"collection": "activities", "source_id": activity['_id'], "title": activity['dn']})]
+                    if faiss_db is None:
+                        faiss_db = FAISS.from_documents(final_docs, hf)
+                    faiss_db.add_documents(final_docs)
+                    faiss_db.save_local(f"{data_dir}/vector_db")
+                    print(f"[{i}] [Added document to FAISS]", url)
+                case "mp4":
+                    # TODO: video embedding
+                    pass
+                case "pdf":
+                    # TODO: pdf embedding
+                    pass
+
         except Exception as e:
             print("Error: ", e, "Chapter:", activity["_id"])
