@@ -1,6 +1,7 @@
 import os
 import sys
 import tempfile
+from common.summary import Summary
 import streamlit as st
 from streamlit_chat import message
 from common.config import *
@@ -25,8 +26,6 @@ def fileUpload(key):
 def main():
     st.title("Page Summarizer")
     cfg = ConfigInit()
-    openai_api_key = cfg.getv("openai_api_key")
-    llm = ChatOpenAI(temperature=0, model_name="gpt-4o-mini", api_key=openai_api_key)
 
     file = fileUpload("04_1")
     file_path = None if file is None else file
@@ -36,30 +35,27 @@ def main():
     if "summary_generated" not in st.session_state:
         st.session_state["summary_generated"] = False
 
-    if st.button("Summarize"):
-        if file_path is not None:
+    if file_path:
+        summarizer = Summary(cfg, file_path)
+
+        if st.button("Summarize"):
             with st.spinner("Summarizing..."):
-                text_content = extract_text_from_pdf(file_path, chapter_language)
-                summary = summarize_text(llm, text_content, chapter_language)
+                text_content = summarizer.extract_text_from_pdf(chapter_language)
+                summary = summarizer.summarize_text(text_content, chapter_language)
                 st.session_state["content"] = summary
                 st.session_state["summary_generated"] = True
                 st.info(summary)
-        else:
-            st.error("Please upload a PDF file before summarizing.")
-
-    if st.session_state["summary_generated"]:
-        if st.button("Translate"):
-            if chapter_language == "Nepali":
-                tolanguage = "English"
-            else:
-                tolanguage = "Nepali"
-            with st.spinner("Translating..."):
-                content = st.session_state["content"]
-                translated_content = translate_text(llm, content, tolanguage)
-                st.info(translated_content)
-
-        summary = summarize_pdf(file_path, chapter_language, llm)
-        st.write(summary)
+        
+        if st.session_state["summary_generated"]:
+            if st.button("Translate"):
+                if chapter_language == "Nepali":
+                    tolanguage = "English"
+                else:
+                    tolanguage = "Nepali"
+                with st.spinner("Translating..."):
+                    content = st.session_state["content"]
+                    translated_content = summarizer.translate_text(content, tolanguage)
+                    st.info(translated_content)
 
 if __name__ == "__main__":
     main()
