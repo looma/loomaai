@@ -9,8 +9,6 @@ from langchain.docstore.document import Document
 from pathlib import Path
 from bs4 import BeautifulSoup
 
-from .summary import extract_text_from_pdf, summarize_text
-
 def get_visible_text(url):
     try:
         # Fetch the HTML content from the URL
