@@ -28,3 +28,4 @@ if st.button("Split Chapters"):
     datadir = cfg.getv("datadir")
     client = MongoClient("mongodb://host.docker.internal:47017/")
     split(client, datadir+"/files/chapters")
+    st.write("all textbook chapters have their own pdfs")
