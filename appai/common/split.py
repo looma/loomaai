@@ -3,7 +3,6 @@ import os
 import re
 import fitz
 import requests
-import streamlit as st
 from pymongo import MongoClient
 
 #function takes in the variable connecting to MongoDB and the location of where the pdfs are supposed to go
@@ -87,4 +86,3 @@ def split(client: MongoClient, files_dir: str):
                 nchapter_pdf.save(nsave_info)
         except Exception as e:
             print(f"Error: {e}")
-    st.write("all textbook chapters have their own pdfs")
