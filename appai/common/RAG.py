@@ -1,3 +1,5 @@
+import sys
+import os
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import FastEmbedEmbeddings
 from langchain_community.document_loaders import PyMuPDFLoader
@@ -5,6 +7,8 @@ from langchain.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.schema.runnable import RunnablePassthrough
+from langchain_community.vectorstores import FAISS
+from langchain_community.embeddings import HuggingFaceEmbeddings
 from .config import *
 from langchain_openai import ChatOpenAI
 
@@ -58,11 +62,11 @@ class gen:
         chunks = self.textSplitter.split_documents(pdf) # Splits pdf
         
         # FastEmbed embeddings
-        embedding_func = FastEmbedEmbeddings() #OllamaEmbeddings(model="llama3")
+        # embedding_func = FastEmbedEmbeddings() #OllamaEmbeddings(model="llama3")
 
         # Hugging Face Embeddings
         
-        '''
+        
         model_name = "sentence-transformers/all-mpnet-base-v2"
         model_kwargs = {}
         encode_kwargs = {'normalize_embeddings': False}
@@ -70,18 +74,15 @@ class gen:
             model_name=model_name,
             model_kwargs=model_kwargs,
             encode_kwargs=encode_kwargs)
-        '''
+        
            
 
         # Chroma vector store
-        vectorStore = Chroma.from_documents(chunks, embedding=embedding_func)
+        # vectorStore = Chroma.from_documents(chunks, embedding=embedding_func)
 
         # Faiss vector store
-        '''
-        path = "../../loomadata/vector_db"
-        path = "/app/data/vector_db"
-        #vectorStore = FAISS.load_local(path, embedding_func, allow_dangerous_deserialization=True)
-        '''
+        path = os.path.join(os.path.dirname(__file__), '../../data/vector_db')
+        vectorStore = FAISS.load_local(path, embedding_func, allow_dangerous_deserialization=True)
 
         self.retriever = vectorStore.as_retriever(search_type = "similarity_score_threshold", search_kwargs={"k": 3, "score_threshold": 0.1,}) # Retriever for k = 3 top documents 
 
