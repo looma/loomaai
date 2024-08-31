@@ -7,12 +7,14 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 from appai.common.config import *
 from appai.common.summary import *
 
+#summary for Summary calling summary to summarize text from pdf
 def summary(filename, lang: str):
     cfg = ConfigInit()
     summarizer = Summary(cfg, filename)
     summary = summarizer.summarize_pdf(lang)
     print(summary)
-
+    
+#translate for Summary calling translate to translate text
 def translate(filename, lang: str):
     cfg = ConfigInit()
     translator = Summary(cfg, filename)
