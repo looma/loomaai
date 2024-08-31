@@ -19,6 +19,7 @@ class Summary:
         openai_api_key = cfg.getv("openai_api_key")
         self.llm = ChatOpenAI(temperature=0, model_name="gpt-4o-mini", api_key=openai_api_key)
 
+# excracting nepali text from nepali textbooks
     def extract_text_nepali(self):
         pdf_document = Document(document_path=self.filename, language='nep')
         pdf2text = PDF2Text(document=pdf_document)
@@ -27,7 +28,8 @@ class Summary:
         for page in content:
             text_content += page['text']
         return text_content
-
+    
+#extracting English text from English textbooks
     def extract_text_english(self):
         pdf = fitz.open(self.filename)
         text_content = ''
@@ -36,7 +38,8 @@ class Summary:
             text = page.get_text()
             text_content += text
         return text_content
-
+    
+#calling the specific function whether to extract English text or Nepali text
     def extract_text_from_pdf(self, chapter_language):
         if chapter_language == "Nepali":
             return self.extract_text_nepali()
@@ -44,7 +47,8 @@ class Summary:
             return self.extract_text_english()
         else:
             raise ValueError("Not Nepali or English. Please enter a different document")
-
+        
+#use the extracted text to send to OpenAI to summarize in ChatGPT
     def summarize_text(self, text, chapter_language):
         summarize_prompt = PromptTemplate(
             input_variables=["text"],
@@ -53,12 +57,14 @@ class Summary:
         summarize_chain = summarize_prompt | self.llm | StrOutputParser()
         summary = summarize_chain.invoke({"text": text})
         return summary
-
+    
+#returning the summary
     def summarize_pdf(self, chapter_language):
         text_content = self.extract_text_from_pdf(chapter_language)
         summary = self.summarize_text( text_content, chapter_language)
         return summary
-
+    
+#translating the text into either Nepali or English
     def translate_text(self, text, tolanguage):
         translate_prompt = PromptTemplate(
                 input_variables=["text"],
@@ -67,7 +73,8 @@ class Summary:
         translate_chain = translate_prompt | self.llm | StrOutputParser()
         translated_text = translate_chain.invoke({"text": text})
         return translated_text
-
+    
+#Returning the translated text
     def translate_pdf(self, language):
         text_content = self.extract_text_from_pdf("Nepali")
         translated_content = self.translate_text(text_content, language)
