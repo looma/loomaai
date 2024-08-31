@@ -7,10 +7,13 @@ from appai.common.split import split
 from appai.common.config import *
 from pymongo import MongoClient
 
+#parses the location parameter from the command into a string
 parser = argparse.ArgumentParser(description="Chapter Splitting Tool")
 parser.add_argument("datadir", type=str, help="Data Directory")
 args = parser.parse_args()
 
+#calls the MongoClient and runs the split function in loomaai/appai/common/split.py
+#when running this script, use the command python3 split.py ../../data/files/chapters
 client = MongoClient("mongodb://localhost:47017/")
 split(client=client, files_dir=args.datadir)
 print("all textbook chapters have their own pdfs")
