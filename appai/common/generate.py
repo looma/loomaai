@@ -1,13 +1,12 @@
-import re
-
 import requests
+from langchain_qdrant import QdrantVectorStore
 from pymongo import MongoClient
 
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_community.vectorstores import FAISS
 from langchain.docstore.document import Document
-from pathlib import Path
 from bs4 import BeautifulSoup
+from qdrant_client import QdrantClient
+from qdrant_client.models import Distance, VectorParams
 
 def get_visible_text(url):
     try:
@@ -28,22 +27,12 @@ def get_visible_text(url):
         print(f"Error fetching the URL: {e}")
         return None
 
-def generate_vectors(llm, mongo_client: MongoClient, data_dir: str):
-    model_name = "sentence-transformers/all-mpnet-base-v2"
-    model_kwargs = {}
-    encode_kwargs = {'normalize_embeddings': False}
-    hf = HuggingFaceEmbeddings(
-        model_name=model_name,
-        model_kwargs=model_kwargs,
-        encode_kwargs=encode_kwargs
-    )
+def generate_vectors(llm, mongo_client: MongoClient, vector_db: QdrantVectorStore):
 
     db = mongo_client.get_database("looma")
     chapters_collection = db.get_collection("chapters")
     activities_collection = db.get_collection("activities")
 
-    faiss_db = None
-    Path(f'{data_dir}/vector_db').mkdir(parents=True, exist_ok=True)
     chapters = chapters_collection.find({"pn": {"$ne": ""}})
     print(f'{chapters_collection.count_documents({"pn": {"$ne": ""}})} chapters to be processed')
 
@@ -84,12 +73,9 @@ def generate_vectors(llm, mongo_client: MongoClient, data_dir: str):
                     text = get_visible_text(url)
                     # summary = summarize_text(llm, text, "English")
                     final_docs = [Document(page_content=text,
-                                           metadata={"collection": "activities", "source_id": activity['_id'], "title": activity['dn']})]
-                    if faiss_db is None:
-                        faiss_db = FAISS.from_documents(final_docs, hf)
-                    faiss_db.add_documents(final_docs)
-                    faiss_db.save_local(f"{data_dir}/vector_db")
-                    print(f"[{i}] [Added document to FAISS]", url)
+                                           metadata={"key1": activity.get("key1", ""), "collection": "activities", "source_id": str(activity['_id']), "title": activity['dn']})]
+                    vector_db.add_documents(final_docs)
+                    print(f"[{i}] [Added document to vector DB]", url)
                 case "mp4":
                     # TODO: video embedding
                     pass
@@ -99,3 +85,19 @@ def generate_vectors(llm, mongo_client: MongoClient, data_dir: str):
 
         except Exception as e:
             print("Error: ", e, "Chapter:", activity["_id"])
+
+def create_collection_if_not_exists(collection_name: str, client: QdrantClient):
+    # Check if the collection exists
+    collections = client.get_collections()
+    existing_collections = [collection.name for collection in collections.collections]
+
+    if collection_name in existing_collections:
+        print(f"Collection '{collection_name}' already exists.")
+        return
+    # Create the collection
+    client.create_collection(
+        collection_name=collection_name,
+        vectors_config=VectorParams(size=768, distance=Distance.COSINE),
+    )
+
+    print(f"Collection '{collection_name}' created successfully.")
