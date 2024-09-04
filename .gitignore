@@ -6,3 +6,4 @@ venv
 env
 appai/textbooks
 config.json
+.DS_Store
