@@ -38,6 +38,6 @@ if prompt := st.chat_input("Search Message ..."):
     cfg = ConfigInit()
     with st.chat_message("user"):
         results = query(prompt, qdrant)
-        st.json([e.dict()["metadata"] for e in results])
+        st.json([e.dict() for e in results])
         # for e in results:
         # pdf_viewer(cfg.getv('datadir') + "/" + e.dict()["metadata"]["source"])
