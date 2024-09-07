@@ -35,3 +35,4 @@ if st.button("Split Chapters"):
     client = MongoClient("mongodb://host.docker.internal:47017/")
     split(client, datadir+"/files/chapters", textbooks)
     st.write("all textbook chapters have their own pdfs")
+    generate_vectors(llm, client, datadir+"/files/chapters", lambda chapter: st.write("Processed" + chapter))
