@@ -47,3 +47,9 @@ If you'd like to see the logs of the running container
 % make logs
 ```
 
+## Developers
+
+When importing a common library from CLI: `from ..common.generate import generate_vectors`
+* To run a script in CLI, run it like this from the root directory: `python3 -m appai.cli.generate`
+  * The -m flag is important, do not use the filename
+* When importing a common library from pages: `from common.query_faiss import query`

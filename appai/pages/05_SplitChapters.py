@@ -21,14 +21,4 @@ if st.button("Embed Chapters"):
     datadir = cfg.getv("datadir")
     llm = ChatOpenAI(temperature=0, model_name="gpt-4o", api_key=openai_api_key)
     client = MongoClient("mongodb://host.docker.internal:47017/")
-    generate_vectors(llm, client, datadir+"/files/chapters")
-
-if st.button("Split Chapters"):
-    #gets the directory that the chapters have to go to from 
-    cfg = ConfigInit()
-    datadir = cfg.getv("datadir")
-    
-    #calls the MongoClient and runs the split function in loomaai/appai/common/split.py
-    client = MongoClient("mongodb://host.docker.internal:47017/")
-    split(client, datadir+"/files/chapters")
-    st.write("all textbook chapters have their own pdfs")
+    generate_vectors(llm, client, datadir+"/files/chapters", lambda chapter: st.write("Processed" + chapter))
