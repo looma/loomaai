@@ -23,6 +23,9 @@ if st.button("Embed Chapters"):
     client = MongoClient("mongodb://host.docker.internal:47017/")
     generate_vectors(llm, client, datadir+"/files/chapters")
 
+#textbox that determines what chapters need to be split
+textbooks = st.text_input("What textbooks need to be split. Type 'all' for all the textbooks or the textbook prefix for a specific one")
+
 if st.button("Split Chapters"):
     #gets the directory that the chapters have to go to from 
     cfg = ConfigInit()
@@ -30,5 +33,5 @@ if st.button("Split Chapters"):
     
     #calls the MongoClient and runs the split function in loomaai/appai/common/split.py
     client = MongoClient("mongodb://host.docker.internal:47017/")
-    split(client, datadir+"/files/chapters")
+    split(client, datadir+"/files/chapters", textbooks)
     st.write("all textbook chapters have their own pdfs")
