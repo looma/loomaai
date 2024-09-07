@@ -2,7 +2,7 @@ import streamlit as st
 
 from streamlit_pdf_viewer import pdf_viewer
 
-from common.query_faiss import query
+from common.query import query
 from common.config import *
 
 from langchain_huggingface import HuggingFaceEmbeddings
