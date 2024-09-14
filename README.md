@@ -50,6 +50,17 @@ If you'd like to see the logs of the running container
 ## Developers
 
 When importing a common library from CLI: `from ..common.generate import generate_vectors`
-* To run a script in CLI, run it like this from the root directory: `python3 -m appai.cli.generate`
+* To run a script in CLI, run it like this from the root directory: `python3 -m appai.cli.embed`
   * The -m flag is important, do not use the filename
 * When importing a common library from pages: `from common.query_faiss import query`
+
+### Re-generate Vector Database
+
+This process will delete the contents of the vector database (Qdrant) and re-embed all activities from MongoDB 
+
+```python3 -m appai.cli.embed```
+  * The -m flag is important, do not use the filename
+
+### Test Semantic Search
+
+Access Streamlit by visiting [http://localhost:47000/loomaai](http://localhost:47000/loomaai) and click on "Search Bar"
