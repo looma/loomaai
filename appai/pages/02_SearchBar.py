@@ -2,7 +2,7 @@ import streamlit as st
 
 from streamlit_pdf_viewer import pdf_viewer
 
-from common.query import query
+from common.query_faiss import query
 from common.config import *
 
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -22,6 +22,9 @@ hf = HuggingFaceEmbeddings(
     encode_kwargs=encode_kwargs
 )
 qclient = QdrantClient(url='http://qdrant:6333')
+qdrant = QdrantVectorStore.from_existing_collection(embedding=hf,
+                                                    collection_name="activities",
+                                                    url="http://qdrant:6333")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -34,7 +37,7 @@ if prompt := st.chat_input("Search Message ..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     cfg = ConfigInit()
     with st.chat_message("user"):
-        results = query(prompt, qclient)
-        st.json([e for e in results])
+        results = query(prompt, qdrant)
+        st.json([e.dict()["metadata"] for e in results])
         # for e in results:
         # pdf_viewer(cfg.getv('datadir') + "/" + e.dict()["metadata"]["source"])
