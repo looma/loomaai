@@ -1,8 +1,7 @@
 from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_community.vectorstores import FAISS
-from langchain_qdrant import QdrantVectorStore
+from qdrant_client import QdrantClient
 
-def query(q: str, qdrant: QdrantVectorStore):
+def query(q: str, qdrant: QdrantClient):
 
     model_name = "sentence-transformers/all-mpnet-base-v2"
     model_kwargs = {}
@@ -13,5 +12,5 @@ def query(q: str, qdrant: QdrantVectorStore):
         encode_kwargs=encode_kwargs
     )
 
-    docs = qdrant.similarity_search(q)
+    docs = qdrant.query_points(collection_name="activities", query=hf.embed_query(q),    with_payload=True,)
     return docs
