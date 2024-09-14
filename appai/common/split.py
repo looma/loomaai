@@ -6,21 +6,14 @@ import requests
 from pymongo import MongoClient
 
 #function takes in the variable connecting to MongoDB and the location of where the pdfs are supposed to go
-def split(client: MongoClient, files_dir: str, textbooks: str): 
+def split(client: MongoClient, files_dir: str): 
 
     #navigates to the chapter collection in the looma database
     db = client.get_database("looma")
-    collection = db.get_collection("chapters")
-    
-    #filters depending on the textbooks parameter
-    if textbooks == 'all':
-        data = collection.find()
-    else:
-        prefix = re.compile(fr"^{textbooks}\d", re.IGNORECASE)
-        data = collection.find({"_id": prefix})
-        
+    collection = db.get_collection("chapters")  
+
     #iterates through all the chapters
-    for chapter in data:
+    for chapter in collection.find():
         try:
             #determines whether to use the pn and len fields, npn and nlen fields, or both
             nfirstPage = -1
@@ -48,7 +41,7 @@ def split(client: MongoClient, files_dir: str, textbooks: str):
                 continue
             
             #searches the grade and subject of the textbook within the _id field to access the textbook through the prefix field for the textbook data
-            groups = re.search(r"([1-9]|10|11|12)(EN|S|SF|M|SS|N|H|V|CS)[0-9]{2}(\.[0-9]{2})?",
+            groups = re.search(r"([1-9]|10|11|12)(EN|ENa|Sa|S|SF|Ma|M|SSa|SS|N|H|V|CS)[0-9]{2}(\.[0-9]{2})?",
                                 chapter['_id'], re.IGNORECASE)
             grade = groups[1]
             subject = groups[2]
