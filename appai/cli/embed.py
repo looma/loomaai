@@ -16,5 +16,6 @@ llm = ChatOpenAI(temperature=0, model_name="gpt-4o", api_key=args.apikey)
 client = MongoClient("mongodb://localhost:47017/")
 
 qclient = QdrantClient(url='http://localhost:46333')
+qclient.delete_collection("activities")
 create_collection_if_not_exists("activities", qclient)
 generate_vectors(llm=llm, mongo_client=client, vector_db=qclient)
