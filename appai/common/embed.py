@@ -1,3 +1,5 @@
+import re
+
 import requests
 from langchain_qdrant import QdrantVectorStore
 from pymongo import MongoClient
@@ -7,7 +9,25 @@ from langchain.docstore.document import Document
 from bs4 import BeautifulSoup
 from qdrant_client import QdrantClient
 from qdrant_client import models
+import requests
+import fitz  # PyMuPDF
+from io import BytesIO
 
+def download_pdf(url):
+    response = requests.get(url)
+    response.raise_for_status()
+    return BytesIO(response.content)
+
+def extract_text_from_pdf(pdf_stream):
+    pdf_document = fitz.open(stream=pdf_stream, filetype="pdf")
+    text = ""
+
+    for page_num in range(len(pdf_document)):
+        page = pdf_document.load_page(page_num)
+        text += page.get_text()
+
+    pdf_document.close()
+    return text
 
 def get_visible_text(url):
     try:
@@ -33,15 +53,45 @@ def generate_vectors(llm, mongo_client: MongoClient, vector_db: QdrantClient):
     db = mongo_client.get_database("looma")
     activities_collection = db.get_collection("activities")
 
-    activities = activities_collection.find({"ft": "html"})
-    print(f'{activities_collection.count_documents({"ft": "html"})} activities to be processed')
+    activities = activities_collection.find({"ft": {"$in": ["chapter", "html"]}})
+    print(f'{activities_collection.count_documents({"ft": {"$in": ["chapter", "html"]}})} activities to be processed')
 
     for i, activity in enumerate(activities):
         try:
             match activity['ft']:
+                case "chapter":
+                    # activity['ID'] is the chapter ID (not the activity objectid)
+                    groups = re.search(r"([1-9]|10|11|12)(EN|ENa|Sa|S|SF|Ma|M|SSa|SS|N|H|V|CS)[0-9]{2}(\.[0-9]{2})?",
+                                       activity['ID'], re.IGNORECASE)
+                    grade_level = groups[1]  # grade level
+                    subject = groups[2]
+                    textbook = db.textbooks.find_one({"prefix": grade_level + subject})
+                    url = f"https://looma.website/content/chapters/{textbook['fp'].removeprefix("textbooks/")}textbook_chapters/{activity['ID']}.pdf"
+
+                    pdf_stream = download_pdf(url)
+                    text = extract_text_from_pdf(pdf_stream)
+
+                    model_name = "sentence-transformers/all-mpnet-base-v2"
+                    model_kwargs = {}
+                    encode_kwargs = {'normalize_embeddings': False}
+                    hf = HuggingFaceEmbeddings(
+                        model_name=model_name,
+                        model_kwargs=model_kwargs,
+                        encode_kwargs=encode_kwargs
+                    )
+
+                    vector_db.upsert("activities", points=[
+                        models.PointStruct(
+                            id=objectid_to_uuid(str(activity['_id'])),
+                            vector=hf.embed_query(text),
+                            payload={"key1": activity.get("key1", ""), "collection": "activities",
+                                     "source_id": str(activity['_id']), "title": activity['dn']},
+                        ),
+                    ])
+
+                    print(f"[{i}] [Added chapter to vector DB]", url)
                 case "html":
                     url = f"http://looma.website/{activity['fp']}{activity['fn']}"
-                    print(url)
                     text = get_visible_text(url)
                     model_name = "sentence-transformers/all-mpnet-base-v2"
                     model_kwargs = {}
