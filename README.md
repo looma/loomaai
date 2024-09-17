@@ -1,7 +1,13 @@
 # Looma AI
 
+## User Guide
 
-
+### Embed all activities
+```bash
+python3 -m appai.cli.embed 
+```
+* This process will generate embeddings for all activities in the MongoDB `activities` collection and add the vectors to the Qdrant `activities` collection.
+* IMPORTANT: This process will DELETE all existing entries from qdrant and rebuild the entire vector database.
 
 ### To install and run the LoomaAI container (in Terminal):
 
