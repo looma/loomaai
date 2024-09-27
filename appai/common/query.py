@@ -12,5 +12,5 @@ def query(q: str, qdrant: QdrantClient):
         encode_kwargs=encode_kwargs
     )
 
-    docs = qdrant.query_points(collection_name="activities", query=hf.embed_query(q),    with_payload=True,)
+    docs = qdrant.query_points(collection_name="activities", query=hf.embed_query(q), with_payload=True,)
     return docs
