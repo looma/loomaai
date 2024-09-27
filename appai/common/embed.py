@@ -49,7 +49,7 @@ def get_visible_text(url):
         return None
 
 
-def generate_vectors(llm, mongo_client: MongoClient, vector_db: QdrantClient):
+def generate_vectors(mongo_client: MongoClient, vector_db: QdrantClient):
     db = mongo_client.get_database("looma")
     activities_collection = db.get_collection("activities")
 
