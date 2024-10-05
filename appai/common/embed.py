@@ -1,5 +1,6 @@
 import re
 
+import bson
 import requests
 from langchain_qdrant import QdrantVectorStore
 from pymongo import MongoClient
@@ -13,10 +14,12 @@ import requests
 import fitz  # PyMuPDF
 from io import BytesIO
 
+
 def download_pdf(url):
     response = requests.get(url)
     response.raise_for_status()
     return BytesIO(response.content)
+
 
 def extract_text_from_pdf(pdf_stream):
     pdf_document = fitz.open(stream=pdf_stream, filetype="pdf")
@@ -28,6 +31,7 @@ def extract_text_from_pdf(pdf_stream):
 
     pdf_document.close()
     return text
+
 
 def get_visible_text(url):
     try:
@@ -49,12 +53,80 @@ def get_visible_text(url):
         return None
 
 
+# only use for ft=chapter
+def populate_relevant_resources(mongo_client: MongoClient, vector_db: QdrantClient):
+    offset = None
+    while True:
+        (results, offset) = vector_db.scroll(
+            collection_name="activities",  # Replace with your collection name
+            scroll_filter=models.Filter(
+                must=[
+                    models.FieldCondition(key="ft",
+                                          match=models.MatchValue(value="chapter")),
+                ]
+            ),
+            limit=2,
+            with_vectors=True,
+            offset=offset
+        )
+
+        for chapter in results:
+            similar_docs = vector_db.query_points(collection_name="activities", query=chapter.vector, with_payload=True,
+                                                  query_filter=models.Filter(
+                                                      must_not=[
+                                                          models.FieldCondition(key="ft",
+                                                                                match=models.MatchValue(
+                                                                                    value="chapter")),
+                                                      ]
+                                                  ), limit=5)
+
+            for activity in similar_docs.points:
+                print(activity)
+                mongo_client.get_database("looma").get_collection("activities").update_one(
+                    {"_id": bson.ObjectId(activity.payload["source_id"])}, {"$addToSet": {"ch_id": chapter.payload["chapter_id"]}})
+            print(f"Updated relevant resources for chapter {chapter.payload['chapter_id']}")
+
+        if offset is None:
+            print("Done")
+            return
+    # db = mongo_client.get_database("looma")
+    # activities_collection = db.get_collection("activities")
+    # activities = activities_collection.find({"ft": {"$in": ["chapter"]}})
+    # print(f'{activities_collection.count_documents({"ft": {"$in": ["chapter"]}})} chapters to be processed')
+    # for i, chapter in enumerate(activities):
+    #     pdf_stream = download_pdf(url)
+    #     text = extract_text_from_pdf(pdf_stream)
+    #
+    #     model_name = "sentence-transformers/all-mpnet-base-v2"
+    #     model_kwargs = {}
+    #     encode_kwargs = {'normalize_embeddings': False}
+    #     hf = HuggingFaceEmbeddings(
+    #         model_name=model_name,
+    #         model_kwargs=model_kwargs,
+    #         encode_kwargs=encode_kwargs
+    #     )
+    #
+    #     embeddings = hf.embed_query(text)
+    #     similar_docs = vector_db.query_points(collection_name="activities", query=embeddings, with_payload=True,
+    #                                           query_filter=models.Filter(
+    #                                               must_not=[
+    #                                                   models.FieldCondition(key="ft",
+    #                                                                         match=models.MatchValue(value="chapter")),
+    #                                               ]
+    #                                           ), limit=5)
+    #
+    #     for doc in similar_docs:
+    #         mongo_client.get_database("looma").get_collection("activities").update_one({"_id": bson.ObjectId(doc[1].payload["source_id"])}, {"$addToSet": { "ch_id": chapter["ID"] }})
+    #     print(f"[{i}] Updated relevant resources for chapter {chapter['ID']}")
+
+
 def generate_vectors(mongo_client: MongoClient, vector_db: QdrantClient):
     db = mongo_client.get_database("looma")
     activities_collection = db.get_collection("activities")
 
-    activities = activities_collection.find({"ft": {"$in": ["chapter", "html"]}})
-    print(f'{activities_collection.count_documents({"ft": {"$in": ["chapter", "html"]}})} activities to be processed')
+    activities = activities_collection.find({"ft": {"$in": ["chapter", "html", "pdf"]}})
+    print(
+        f'{activities_collection.count_documents({"ft": {"$in": ["chapter", "html", "pdf"]}})} activities to be processed')
 
     for i, activity in enumerate(activities):
         try:
@@ -80,12 +152,14 @@ def generate_vectors(mongo_client: MongoClient, vector_db: QdrantClient):
                         encode_kwargs=encode_kwargs
                     )
 
+                    embeddings = hf.embed_query(text)
+
                     vector_db.upsert("activities", points=[
                         models.PointStruct(
                             id=objectid_to_uuid(str(activity['_id'])),
-                            vector=hf.embed_query(text),
+                            vector=embeddings,
                             payload={"key1": activity.get("key1", ""), "collection": "activities",
-                                     "source_id": str(activity['_id']), "title": activity['dn']},
+                                     "source_id": str(activity['_id']), "title": activity['dn'], "ft": "chapter", "chapter_id": activity['ID']},
                         ),
                     ])
 
@@ -107,7 +181,7 @@ def generate_vectors(mongo_client: MongoClient, vector_db: QdrantClient):
                             id=objectid_to_uuid(str(activity['_id'])),
                             vector=hf.embed_query(text),
                             payload={"key1": activity.get("key1", ""), "collection": "activities",
-                                     "source_id": str(activity['_id']), "title": activity['dn']},
+                                     "source_id": str(activity['_id']), "title": activity['dn'], "ft": "html"},
                         ),
                     ])
 
@@ -116,11 +190,34 @@ def generate_vectors(mongo_client: MongoClient, vector_db: QdrantClient):
                     # TODO: video embedding
                     pass
                 case "pdf":
-                    # TODO: pdf embedding
-                    pass
+                    # https://looma.website/content/pdfs/What_Time_Do_You.pdf
+                    fp = activity['fp'] if 'fp' in activity else '../content/pdfs/'
+                    url = f"https://looma.website/{fp}{activity['fn']}"
+                    pdf_stream = download_pdf(url)
+                    text = extract_text_from_pdf(pdf_stream)
+
+                    model_name = "sentence-transformers/all-mpnet-base-v2"
+                    model_kwargs = {}
+                    encode_kwargs = {'normalize_embeddings': False}
+                    hf = HuggingFaceEmbeddings(
+                        model_name=model_name,
+                        model_kwargs=model_kwargs,
+                        encode_kwargs=encode_kwargs
+                    )
+
+                    vector_db.upsert("activities", points=[
+                        models.PointStruct(
+                            id=objectid_to_uuid(str(activity['_id'])),
+                            vector=hf.embed_query(text),
+                            payload={"key1": activity.get("key1", ""), "collection": "activities",
+                                     "source_id": str(activity['_id']), "title": activity['dn'], "ft": "pdf"},
+                        ),
+                    ])
+
+                    print(f"[{i}] [Added PDF to vector DB]", url)
 
         except Exception as e:
-            print("Error: ", e, "Chapter:", activity["_id"])
+            print("Error: ", e, "Activity:", activity["_id"])
 
 
 def create_collection_if_not_exists(collection_name: str, client: QdrantClient):
@@ -138,6 +235,7 @@ def create_collection_if_not_exists(collection_name: str, client: QdrantClient):
     )
 
     print(f"Collection '{collection_name}' created successfully.")
+
 
 def objectid_to_uuid(objectid):
     """
@@ -160,6 +258,7 @@ def objectid_to_uuid(objectid):
     uuid = f"{padded_objectid[0:8]}-{padded_objectid[8:12]}-{padded_objectid[12:16]}-{padded_objectid[16:20]}-{padded_objectid[20:32]}"
 
     return uuid
+
 
 def uuid_to_objectid(uuid):
     """
