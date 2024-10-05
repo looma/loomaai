@@ -13,6 +13,7 @@ from qdrant_client import models
 import requests
 import fitz  # PyMuPDF
 from io import BytesIO
+from multiprocessing.pool import ThreadPool
 
 
 def download_pdf(url):
@@ -128,96 +129,103 @@ def generate_vectors(mongo_client: MongoClient, vector_db: QdrantClient):
     print(
         f'{activities_collection.count_documents({"ft": {"$in": ["chapter", "html", "pdf"]}})} activities to be processed')
 
-    for i, activity in enumerate(activities):
-        try:
-            match activity['ft']:
-                case "chapter":
-                    # activity['ID'] is the chapter ID (not the activity objectid)
-                    groups = re.search(r"([1-9]|10|11|12)(EN|ENa|Sa|S|SF|Ma|M|SSa|SS|N|H|V|CS)[0-9]{2}(\.[0-9]{2})?",
-                                       activity['ID'], re.IGNORECASE)
-                    grade_level = groups[1]  # grade level
-                    subject = groups[2]
-                    textbook = db.textbooks.find_one({"prefix": grade_level + subject})
-                    url = f"https://looma.website/content/chapters/{textbook['fp'].removeprefix("textbooks/")}textbook_chapters/{activity['ID']}.pdf"
+    args = [(activity, db, i, vector_db) for i, activity in enumerate(activities)]
+    pool = ThreadPool(20)
+    results = pool.map(generate_one, args)
 
-                    pdf_stream = download_pdf(url)
-                    text = extract_text_from_pdf(pdf_stream)
 
-                    model_name = "sentence-transformers/all-mpnet-base-v2"
-                    model_kwargs = {}
-                    encode_kwargs = {'normalize_embeddings': False}
-                    hf = HuggingFaceEmbeddings(
-                        model_name=model_name,
-                        model_kwargs=model_kwargs,
-                        encode_kwargs=encode_kwargs
-                    )
+def generate_one(args):
+    (activity, db, i, vector_db) = args
+    try:
+        match activity['ft']:
+            case "chapter":
+                # activity['ID'] is the chapter ID (not the activity objectid)
+                groups = re.search(r"([1-9]|10|11|12)(EN|ENa|Sa|S|SF|Ma|M|SSa|SS|N|H|V|CS)[0-9]{2}(\.[0-9]{2})?",
+                                   activity['ID'], re.IGNORECASE)
+                grade_level = groups[1]  # grade level
+                subject = groups[2]
+                textbook = db.textbooks.find_one({"prefix": grade_level + subject})
+                url = f"https://looma.website/content/chapters/{textbook['fp'].removeprefix("textbooks/")}textbook_chapters/{activity['ID']}.pdf"
 
-                    embeddings = hf.embed_query(text)
+                pdf_stream = download_pdf(url)
+                text = extract_text_from_pdf(pdf_stream)
 
-                    vector_db.upsert("activities", points=[
-                        models.PointStruct(
-                            id=objectid_to_uuid(str(activity['_id'])),
-                            vector=embeddings,
-                            payload={"key1": activity.get("key1", ""), "collection": "activities",
-                                     "source_id": str(activity['_id']), "title": activity['dn'], "ft": "chapter", "chapter_id": activity['ID']},
-                        ),
-                    ])
+                model_name = "sentence-transformers/all-mpnet-base-v2"
+                model_kwargs = {}
+                encode_kwargs = {'normalize_embeddings': False}
+                hf = HuggingFaceEmbeddings(
+                    model_name=model_name,
+                    model_kwargs=model_kwargs,
+                    encode_kwargs=encode_kwargs
+                )
 
-                    print(f"[{i}] [Added chapter to vector DB]", url)
-                case "html":
-                    url = f"http://looma.website/{activity['fp']}{activity['fn']}"
-                    text = get_visible_text(url)
-                    model_name = "sentence-transformers/all-mpnet-base-v2"
-                    model_kwargs = {}
-                    encode_kwargs = {'normalize_embeddings': False}
-                    hf = HuggingFaceEmbeddings(
-                        model_name=model_name,
-                        model_kwargs=model_kwargs,
-                        encode_kwargs=encode_kwargs
-                    )
+                embeddings = hf.embed_query(text)
 
-                    vector_db.upsert("activities", points=[
-                        models.PointStruct(
-                            id=objectid_to_uuid(str(activity['_id'])),
-                            vector=hf.embed_query(text),
-                            payload={"key1": activity.get("key1", ""), "collection": "activities",
-                                     "source_id": str(activity['_id']), "title": activity['dn'], "ft": "html"},
-                        ),
-                    ])
+                vector_db.upsert("activities", points=[
+                    models.PointStruct(
+                        id=objectid_to_uuid(str(activity['_id'])),
+                        vector=embeddings,
+                        payload={"key1": activity.get("key1", ""), "collection": "activities",
+                                 "source_id": str(activity['_id']), "title": activity['dn'], "ft": "chapter",
+                                 "chapter_id": activity['ID']},
+                    ),
+                ])
 
-                    print(f"[{i}] [Added document to vector DB]", url)
-                case "mp4":
-                    # TODO: video embedding
-                    pass
-                case "pdf":
-                    # https://looma.website/content/pdfs/What_Time_Do_You.pdf
-                    fp = activity['fp'] if 'fp' in activity else '../content/pdfs/'
-                    url = f"https://looma.website/{fp}{activity['fn']}"
-                    pdf_stream = download_pdf(url)
-                    text = extract_text_from_pdf(pdf_stream)
+                print(f"[{i}] [Added chapter to vector DB]", url)
+            case "html":
+                url = f"http://looma.website/{activity['fp']}{activity['fn']}"
+                text = get_visible_text(url)
+                model_name = "sentence-transformers/all-mpnet-base-v2"
+                model_kwargs = {}
+                encode_kwargs = {'normalize_embeddings': False}
+                hf = HuggingFaceEmbeddings(
+                    model_name=model_name,
+                    model_kwargs=model_kwargs,
+                    encode_kwargs=encode_kwargs
+                )
 
-                    model_name = "sentence-transformers/all-mpnet-base-v2"
-                    model_kwargs = {}
-                    encode_kwargs = {'normalize_embeddings': False}
-                    hf = HuggingFaceEmbeddings(
-                        model_name=model_name,
-                        model_kwargs=model_kwargs,
-                        encode_kwargs=encode_kwargs
-                    )
+                vector_db.upsert("activities", points=[
+                    models.PointStruct(
+                        id=objectid_to_uuid(str(activity['_id'])),
+                        vector=hf.embed_query(text),
+                        payload={"key1": activity.get("key1", ""), "collection": "activities",
+                                 "source_id": str(activity['_id']), "title": activity['dn'], "ft": "html"},
+                    ),
+                ])
 
-                    vector_db.upsert("activities", points=[
-                        models.PointStruct(
-                            id=objectid_to_uuid(str(activity['_id'])),
-                            vector=hf.embed_query(text),
-                            payload={"key1": activity.get("key1", ""), "collection": "activities",
-                                     "source_id": str(activity['_id']), "title": activity['dn'], "ft": "pdf"},
-                        ),
-                    ])
+                print(f"[{i}] [Added document to vector DB]", url)
+            case "mp4":
+                # TODO: video embedding
+                pass
+            case "pdf":
+                # https://looma.website/content/pdfs/What_Time_Do_You.pdf
+                fp = activity['fp'] if 'fp' in activity else '../content/pdfs/'
+                url = f"https://looma.website/{fp}{activity['fn']}"
+                pdf_stream = download_pdf(url)
+                text = extract_text_from_pdf(pdf_stream)
 
-                    print(f"[{i}] [Added PDF to vector DB]", url)
+                model_name = "sentence-transformers/all-mpnet-base-v2"
+                model_kwargs = {}
+                encode_kwargs = {'normalize_embeddings': False}
+                hf = HuggingFaceEmbeddings(
+                    model_name=model_name,
+                    model_kwargs=model_kwargs,
+                    encode_kwargs=encode_kwargs
+                )
 
-        except Exception as e:
-            print("Error: ", e, "Activity:", activity["_id"])
+                vector_db.upsert("activities", points=[
+                    models.PointStruct(
+                        id=objectid_to_uuid(str(activity['_id'])),
+                        vector=hf.embed_query(text),
+                        payload={"key1": activity.get("key1", ""), "collection": "activities",
+                                 "source_id": str(activity['_id']), "title": activity['dn'], "ft": "pdf"},
+                    ),
+                ])
+
+                print(f"[{i}] [Added PDF to vector DB]", url)
+
+    except Exception as e:
+        print("Error: ", e, "Activity:", activity["_id"])
 
 
 def create_collection_if_not_exists(collection_name: str, client: QdrantClient):
