@@ -4,20 +4,14 @@
 
 ### Setup
 1. Create and/or activate your python [virtual environment](https://docs.python.org/3/library/venv.html)
+  On mac/linux run `source <venv>/bin/activate`
 
 2. `
 pip3 install -r requirements.txt
 `
 
-### Embed all activities
-```bash
-python3 -m appai.cli.embed 
-```
-* This process will generate embeddings for all activities in the MongoDB `activities` collection and add the vectors to the Qdrant `activities` collection.
-* IMPORTANT: This process will DELETE all existing entries from qdrant and rebuild the entire vector database.
-
-### Start Streamlit and Qdrant
-Streamlit is a web interface for testing Looma AI features. Qdrant is a vector database for storing and querying embeddings.
+### Run Containers (Required 1st step)
+This will run a docker-compose with Streamlit and Qdrant. Streamlit is a web interface for testing Looma AI features. Qdrant is a vector database for storing and querying embeddings.
 ```bash
 make
 docker-compose up
@@ -26,7 +20,24 @@ docker-compose up
 Streamlit: [http://localhost:47000/loomaai](http://localhost:47000/loomaai)
 Qdrant web UI: [http://localhost:46333/dashboard](http://localhost:46333/dashboard)
 
-The [Looma-II](https://github.com/looma/Looma-II) semantic search function requires this docker cluster to be running. You must generate the embeddings first before performing searches.
+### Embed All Activities
+This requires the docker-compose to be running (see "Run Containers")
+```bash
+python3 -m appai.cli.embed 
+```
+* This process will generate embeddings for all activities in the MongoDB `activities` collection and add the vectors to the Qdrant `activities` collection.
+* IMPORTANT: This process will DELETE all existing entries from qdrant and rebuild the entire vector database.
+* The [Looma-II](https://github.com/looma/Looma-II) semantic search feature requires these embeddings to be generated first and the docker-compose to be running
+
+### Populate "Related Resources"
+* Follow the steps in "Run Containers" and "Embed All Activities" first
+
+```bash
+python3 -m appai.cli.populate_mongo
+```
+* This process will populate the "related resources" for every chapter in [Looma-II](https://github.com/looma/Looma-II)
+* This process is additive and will not overwrite any existing related resources in MongoDB, it will also not add duplicate relations
+
 
 ## Developers
 
