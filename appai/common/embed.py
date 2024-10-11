@@ -83,7 +83,8 @@ def populate_relevant_resources(mongo_client: MongoClient, vector_db: QdrantClie
             for activity in similar_docs.points:
                 print(activity)
                 mongo_client.get_database("looma").get_collection("activities").update_one(
-                    {"_id": bson.ObjectId(activity.payload["source_id"])}, {"$addToSet": {"ch_id": chapter.payload["chapter_id"]}})
+                    {"_id": bson.ObjectId(activity.payload["source_id"])},
+                    {"$addToSet": {"ch_id": chapter.payload["chapter_id"]}})
             print(f"Updated relevant resources for chapter {chapter.payload['chapter_id']}")
 
         if offset is None:
@@ -120,14 +121,15 @@ def populate_relevant_resources(mongo_client: MongoClient, vector_db: QdrantClie
     #     print(f"[{i}] Updated relevant resources for chapter {chapter['ID']}")
 
 
+from alive_progress import alive_bar
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+
 def generate_vectors(mongo_client: MongoClient, vector_db: QdrantClient):
     db = mongo_client.get_database("looma")
     activities_collection = db.get_collection("activities")
 
     activities = activities_collection.find({"ft": {"$in": ["chapter", "html", "pdf"]}})
-    print(
-        f'{activities_collection.count_documents({"ft": {"$in": ["chapter", "html", "pdf"]}})} activities to be processed')
-
 
     model_name = "sentence-transformers/all-mpnet-base-v2"
     model_kwargs = {}
@@ -138,75 +140,90 @@ def generate_vectors(mongo_client: MongoClient, vector_db: QdrantClient):
         encode_kwargs=encode_kwargs
     )
 
-    for i, activity in enumerate(activities):
-        try:
-            match activity['ft']:
-                case "chapter":
-                    # activity['ID'] is the chapter ID (not the activity objectid)
-                    groups = re.search(r"([1-9]|10|11|12)(EN|ENa|Sa|S|SF|Ma|M|SSa|SS|N|H|V|CS)[0-9]{2}(\.[0-9]{2})?",
-                                       activity['ID'], re.IGNORECASE)
-                    grade_level = groups[1]  # grade level
-                    subject = groups[2]
-                    textbook = db.textbooks.find_one({"prefix": grade_level + subject})
-                    url = f"https://looma.website/content/chapters/{textbook['fp'].removeprefix("textbooks/")}textbook_chapters/{activity['ID']}.pdf"
+    with alive_bar(activities_collection.count_documents({"ft": {"$in": ["chapter", "html", "pdf"]}})) as progress_bar:
+        # Use ThreadPoolExecutor to speed up the loop
+        with ThreadPoolExecutor() as executor:
+            # Submit tasks to the pool
+            futures = {executor.submit(process_activity, activity, hf, vector_db, db): activity for activity in
+                       activities}
 
-                    pdf_stream = download_pdf(url)
-                    text = extract_text_from_pdf(pdf_stream)
-
-                    embeddings = hf.embed_query(text)
-
-                    vector_db.upsert("activities", points=[
-                        models.PointStruct(
-                            id=objectid_to_uuid(str(activity['_id'])),
-                            vector=embeddings,
-                            payload={"key1": activity.get("key1", ""), "collection": "activities",
-                                     "source_id": str(activity['_id']), "title": activity['dn'], "ft": "chapter", "chapter_id": activity['ID']},
-                        ),
-                    ])
-
-                    print(f"[{i}] [Added chapter to vector DB]", url)
-                case "html":
-                    url = f"http://looma.website/{activity['fp']}{activity['fn']}"
-                    text = get_visible_text(url)
-
-                    embeddings = hf.embed_query(text)
-
-                    vector_db.upsert("activities", points=[
-                        models.PointStruct(
-                            id=objectid_to_uuid(str(activity['_id'])),
-                            vector=embeddings,
-                            payload={"key1": activity.get("key1", ""), "collection": "activities",
-                                     "source_id": str(activity['_id']), "title": activity['dn'], "ft": "html"},
-                        ),
-                    ])
-
-                    print(f"[{i}] [Added document to vector DB]", url)
-                case "mp4":
-                    # TODO: video embedding
-                    pass
-                case "pdf":
-                    # https://looma.website/content/pdfs/What_Time_Do_You.pdf
-                    fp = activity['fp'] if 'fp' in activity else '../content/pdfs/'
-                    url = f"https://looma.website/{fp}{activity['fn']}"
-                    pdf_stream = download_pdf(url)
-                    text = extract_text_from_pdf(pdf_stream)
+            # Ensure all futures complete and get the result (if needed)
+            for future in as_completed(futures):
+                activity = futures[future]
+                try:
+                    future.result()  # Get the result if needed, or handle any exceptions
+                except Exception as e:
+                    print("Error: ", e, "Activity:", activity["_id"])
+                progress_bar()
+        for activity in activities:
+            process_activity(activity, hf, vector_db, db)
 
 
-                    embedded = hf.embed_query(text)
+# db argument is the mongo looma database (not client)
+def process_activity(activity, hf: HuggingFaceEmbeddings, vector_db: QdrantClient, db):
+        match activity['ft']:
+            case "chapter":
+                # activity['ID'] is the chapter ID (not the activity objectid)
+                groups = re.search(r"([1-9]|10|11|12)(EN|ENa|Sa|S|SF|Ma|M|SSa|SS|N|H|V|CS)[0-9]{2}(\.[0-9]{2})?",
+                                   activity['ID'], re.IGNORECASE)
+                grade_level = groups[1]  # grade level
+                subject = groups[2]
+                textbook = db.textbooks.find_one({"prefix": grade_level + subject})
+                url = f"https://looma.website/content/chapters/{textbook['fp'].removeprefix("textbooks/")}textbook_chapters/{activity['ID']}.pdf"
 
-                    vector_db.upsert("activities", points=[
-                        models.PointStruct(
-                            id=objectid_to_uuid(str(activity['_id'])),
-                            vector=embedded,
-                            payload={"key1": activity.get("key1", ""), "collection": "activities",
-                                     "source_id": str(activity['_id']), "title": activity['dn'], "ft": "pdf"},
-                        ),
-                    ])
+                pdf_stream = download_pdf(url)
+                text = extract_text_from_pdf(pdf_stream)
 
-                    print(f"[{i}] [Added PDF to vector DB]", url)
+                embeddings = hf.embed_query(text)
 
-        except Exception as e:
-            print("Error: ", e, "Activity:", activity["_id"])
+                vector_db.upsert("activities", points=[
+                    models.PointStruct(
+                        id=objectid_to_uuid(str(activity['_id'])),
+                        vector=embeddings,
+                        payload={"key1": activity.get("key1", ""), "collection": "activities",
+                                 "source_id": str(activity['_id']), "title": activity['dn'], "ft": "chapter",
+                                 "chapter_id": activity['ID']},
+                    ),
+                ])
+
+                print(f"[] [Added chapter to vector DB]", url)
+            case "html":
+                url = f"http://looma.website/{activity['fp']}{activity['fn']}"
+                text = get_visible_text(url)
+
+                embeddings = hf.embed_query(text)
+
+                vector_db.upsert("activities", points=[
+                    models.PointStruct(
+                        id=objectid_to_uuid(str(activity['_id'])),
+                        vector=embeddings,
+                        payload={"key1": activity.get("key1", ""), "collection": "activities",
+                                 "source_id": str(activity['_id']), "title": activity['dn'], "ft": "html"},
+                    ),
+                ])
+
+                print(f"[] [Added document to vector DB]", url)
+            case "mp4":
+                # TODO: video embedding
+                pass
+            case "pdf":
+                # https://looma.website/content/pdfs/What_Time_Do_You.pdf
+                fp = activity['fp'] if 'fp' in activity else '../content/pdfs/'
+                url = f"https://looma.website/{fp}{activity['fn']}"
+                pdf_stream = download_pdf(url)
+                text = extract_text_from_pdf(pdf_stream)
+
+                embedded = hf.embed_query(text)
+
+                vector_db.upsert("activities", points=[
+                    models.PointStruct(
+                        id=objectid_to_uuid(str(activity['_id'])),
+                        vector=embedded,
+                        payload={"key1": activity.get("key1", ""), "collection": "activities",
+                                 "source_id": str(activity['_id']), "title": activity['dn'], "ft": "pdf"},
+                    ),
+                ])
+                print(f"[] [Added PDF to vector DB]", url)
 
 
 def create_collection_if_not_exists(collection_name: str, client: QdrantClient):
