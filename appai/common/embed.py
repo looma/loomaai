@@ -128,6 +128,16 @@ def generate_vectors(mongo_client: MongoClient, vector_db: QdrantClient):
     print(
         f'{activities_collection.count_documents({"ft": {"$in": ["chapter", "html", "pdf"]}})} activities to be processed')
 
+
+    model_name = "sentence-transformers/all-mpnet-base-v2"
+    model_kwargs = {}
+    encode_kwargs = {'normalize_embeddings': False}
+    hf = HuggingFaceEmbeddings(
+        model_name=model_name,
+        model_kwargs=model_kwargs,
+        encode_kwargs=encode_kwargs
+    )
+
     for i, activity in enumerate(activities):
         try:
             match activity['ft']:
@@ -142,15 +152,6 @@ def generate_vectors(mongo_client: MongoClient, vector_db: QdrantClient):
 
                     pdf_stream = download_pdf(url)
                     text = extract_text_from_pdf(pdf_stream)
-
-                    model_name = "sentence-transformers/all-mpnet-base-v2"
-                    model_kwargs = {}
-                    encode_kwargs = {'normalize_embeddings': False}
-                    hf = HuggingFaceEmbeddings(
-                        model_name=model_name,
-                        model_kwargs=model_kwargs,
-                        encode_kwargs=encode_kwargs
-                    )
 
                     embeddings = hf.embed_query(text)
 
@@ -167,19 +168,13 @@ def generate_vectors(mongo_client: MongoClient, vector_db: QdrantClient):
                 case "html":
                     url = f"http://looma.website/{activity['fp']}{activity['fn']}"
                     text = get_visible_text(url)
-                    model_name = "sentence-transformers/all-mpnet-base-v2"
-                    model_kwargs = {}
-                    encode_kwargs = {'normalize_embeddings': False}
-                    hf = HuggingFaceEmbeddings(
-                        model_name=model_name,
-                        model_kwargs=model_kwargs,
-                        encode_kwargs=encode_kwargs
-                    )
+
+                    embeddings = hf.embed_query(text)
 
                     vector_db.upsert("activities", points=[
                         models.PointStruct(
                             id=objectid_to_uuid(str(activity['_id'])),
-                            vector=hf.embed_query(text),
+                            vector=embeddings,
                             payload={"key1": activity.get("key1", ""), "collection": "activities",
                                      "source_id": str(activity['_id']), "title": activity['dn'], "ft": "html"},
                         ),
@@ -196,19 +191,13 @@ def generate_vectors(mongo_client: MongoClient, vector_db: QdrantClient):
                     pdf_stream = download_pdf(url)
                     text = extract_text_from_pdf(pdf_stream)
 
-                    model_name = "sentence-transformers/all-mpnet-base-v2"
-                    model_kwargs = {}
-                    encode_kwargs = {'normalize_embeddings': False}
-                    hf = HuggingFaceEmbeddings(
-                        model_name=model_name,
-                        model_kwargs=model_kwargs,
-                        encode_kwargs=encode_kwargs
-                    )
+
+                    embedded = hf.embed_query(text)
 
                     vector_db.upsert("activities", points=[
                         models.PointStruct(
                             id=objectid_to_uuid(str(activity['_id'])),
-                            vector=hf.embed_query(text),
+                            vector=embedded,
                             payload={"key1": activity.get("key1", ""), "collection": "activities",
                                      "source_id": str(activity['_id']), "title": activity['dn'], "ft": "pdf"},
                         ),
