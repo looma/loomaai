@@ -120,3 +120,4 @@ watchdog==4.0.2
 wheel==0.44.0
 yarl==1.9.4
 langchain-qdrant
+alive-progress
