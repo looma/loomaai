@@ -65,60 +65,36 @@ def populate_relevant_resources(mongo_client: MongoClient, vector_db: QdrantClie
                                           match=models.MatchValue(value="chapter")),
                 ]
             ),
-            limit=2,
+            limit=10,
             with_vectors=True,
             offset=offset
         )
 
         for chapter in results:
-            similar_docs = vector_db.query_points(collection_name="activities", query=chapter.vector, with_payload=True,
-                                                  query_filter=models.Filter(
-                                                      must_not=[
-                                                          models.FieldCondition(key="ft",
-                                                                                match=models.MatchValue(
-                                                                                    value="chapter")),
-                                                      ]
-                                                  ), limit=5)
+            try:
+                similar_docs = vector_db.query_points(collection_name="activities", query=chapter.vector, with_payload=True,
+                                                      query_filter=models.Filter(
+                                                          must_not=[
+                                                              models.FieldCondition(key="ft",
+                                                                                    match=models.MatchValue(
+                                                                                        value="chapter")),
+                                                          ]
+                                                      ), limit=10)
 
-            for activity in similar_docs.points:
-                print(activity)
-                mongo_client.get_database("looma").get_collection("activities").update_one(
-                    {"_id": bson.ObjectId(activity.payload["source_id"])},
-                    {"$addToSet": {"ch_id": chapter.payload["chapter_id"]}})
-            print(f"Updated relevant resources for chapter {chapter.payload['chapter_id']}")
+                for activity in similar_docs.points:
+                    try:
+                        mongo_client.get_database("looma").get_collection("activities").update_one(
+                            {"_id": bson.ObjectId(activity.payload["source_id"])},
+                            {"$addToSet": {"ch_id": chapter.payload["chapter_id"]}})
+                        print(f"Updated relevant resources for chapter {chapter.payload['chapter_id']}")
+                    except Exception as e:
+                            print(f"Error updating activity {activity.payload['source_id']}: {e}")
+            except Exception as e:
+                print(f"Error processing chapter {chapter.payload['chapter_id']}: {e}")
 
         if offset is None:
             print("Done")
             return
-    # db = mongo_client.get_database("looma")
-    # activities_collection = db.get_collection("activities")
-    # activities = activities_collection.find({"ft": {"$in": ["chapter"]}})
-    # print(f'{activities_collection.count_documents({"ft": {"$in": ["chapter"]}})} chapters to be processed')
-    # for i, chapter in enumerate(activities):
-    #     pdf_stream = download_pdf(url)
-    #     text = extract_text_from_pdf(pdf_stream)
-    #
-    #     model_name = "sentence-transformers/all-mpnet-base-v2"
-    #     model_kwargs = {}
-    #     encode_kwargs = {'normalize_embeddings': False}
-    #     hf = HuggingFaceEmbeddings(
-    #         model_name=model_name,
-    #         model_kwargs=model_kwargs,
-    #         encode_kwargs=encode_kwargs
-    #     )
-    #
-    #     embeddings = hf.embed_query(text)
-    #     similar_docs = vector_db.query_points(collection_name="activities", query=embeddings, with_payload=True,
-    #                                           query_filter=models.Filter(
-    #                                               must_not=[
-    #                                                   models.FieldCondition(key="ft",
-    #                                                                         match=models.MatchValue(value="chapter")),
-    #                                               ]
-    #                                           ), limit=5)
-    #
-    #     for doc in similar_docs:
-    #         mongo_client.get_database("looma").get_collection("activities").update_one({"_id": bson.ObjectId(doc[1].payload["source_id"])}, {"$addToSet": { "ch_id": chapter["ID"] }})
-    #     print(f"[{i}] Updated relevant resources for chapter {chapter['ID']}")
 
 
 from alive_progress import alive_bar
