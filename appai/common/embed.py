@@ -155,7 +155,7 @@ def process_activity(activity, hf: HuggingFaceEmbeddings, vector_db: QdrantClien
             vector_db.upsert("activities", points=[
                 models.PointStruct(
                     id=objectid_to_uuid(str(activity['_id'])),
-                    vector=embeddings,
+                    vector={"text-body": embeddings, "text-title": hf.embed_query(activity['dn'])},
                     payload={"key1": activity.get("key1", ""), "collection": "activities",
                              "source_id": str(activity['_id']), "title": activity['dn'], "ft": "chapter",
                              "chapter_id": activity['ID']},
@@ -172,7 +172,7 @@ def process_activity(activity, hf: HuggingFaceEmbeddings, vector_db: QdrantClien
             vector_db.upsert("activities", points=[
                 models.PointStruct(
                     id=objectid_to_uuid(str(activity['_id'])),
-                    vector=embeddings,
+                    vector={"text-body": embeddings, "text-title": hf.embed_query(activity['dn'])},
                     payload={"key1": activity.get("key1", ""), "collection": "activities",
                              "source_id": str(activity['_id']), "title": activity['dn'], "ft": "html"},
                 ),
