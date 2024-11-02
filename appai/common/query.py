@@ -1,5 +1,6 @@
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from qdrant_client import QdrantClient
+import qdrant_client.models as models
 
 def query(q: str, qdrant: QdrantClient):
 
@@ -11,6 +12,25 @@ def query(q: str, qdrant: QdrantClient):
         model_kwargs=model_kwargs,
         encode_kwargs=encode_kwargs
     )
+    embedded = hf.embed_query(q)
+    results = qdrant.search_batch(
+        collection_name="activities",
+        requests=[
+            models.SearchRequest(
+                vector=models.NamedVector(
+                    name="text-body",
+                    vector=embedded,
+                ),
+                limit=10,
+            ),
+            models.SearchRequest(
+                vector=models.NamedVector(
+                    name="text-title",
+                    vector=embedded
+                ),
+                limit=10,
+            ),
+        ],
+    )
 
-    docs = qdrant.query_points(collection_name="activities", query=hf.embed_query(q), with_payload=True,)
-    return docs
+    return [*results[0], *results[1]]
