@@ -4,11 +4,11 @@
 
 ### Setup
 1. Create and/or activate your python [virtual environment](https://docs.python.org/3/library/venv.html)
-  On mac/linux run `source <venv>/bin/activate`
+   (On mac/linux run `source <venv>/bin/activate`)
 
-2. `
+```
 pip3 install -r requirements.txt
-`
+```
 
 ### Run Containers (Required 1st step)
 This will run a docker-compose with Streamlit and Qdrant. Streamlit is a web interface for testing Looma AI features. Qdrant is a vector database for storing and querying embeddings.
