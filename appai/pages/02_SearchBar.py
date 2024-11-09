@@ -1,12 +1,9 @@
 import streamlit as st
 
-from streamlit_pdf_viewer import pdf_viewer
-
 from common.query import query
 from common.config import *
 
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_qdrant import QdrantVectorStore
 from pymongo import MongoClient
 from qdrant_client import QdrantClient
 

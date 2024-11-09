@@ -1,8 +1,6 @@
 import re
 
 import bson
-import requests
-from langchain_qdrant import QdrantVectorStore
 from pymongo import MongoClient
 
 from langchain_huggingface import HuggingFaceEmbeddings
