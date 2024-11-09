@@ -5,8 +5,6 @@ from pymongo import MongoClient
 from common.config import *
 from common.utils import *
 
-from common.generate import generate_vectors
-
 from common.split import split
 
 st.set_page_config(page_title="Split Chapter PDFs", page_icon=os.path.join('images', 'favicon.ico'), layout="wide",
@@ -14,14 +12,6 @@ st.set_page_config(page_title="Split Chapter PDFs", page_icon=os.path.join('imag
 
 import streamlit as st
 st.title("Split Chapter PDFs")
-
-if st.button("Embed Chapters"):
-    cfg = ConfigInit()
-    openai_api_key = cfg.getv("openai_api_key")
-    datadir = cfg.getv("datadir")
-    llm = ChatOpenAI(temperature=0, model_name="gpt-4o", api_key=openai_api_key)
-    client = MongoClient("mongodb://host.docker.internal:47017/")
-    generate_vectors(llm, client, datadir+"/files/chapters")
 
 #textbox that determines what chapters need to be split
 textbooks = st.text_input("What textbooks need to be split. Type 'all' for all the textbooks or the textbook prefix for a specific chapter")

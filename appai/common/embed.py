@@ -71,15 +71,37 @@ def populate_relevant_resources(mongo_client: MongoClient, vector_db: QdrantClie
 
         for chapter in results:
             try:
-                similar_docs = vector_db.query_points(collection_name="activities", query=chapter.vector,
-                                                      with_payload=True,
-                                                      query_filter=models.Filter(
-                                                          must_not=[
-                                                              models.FieldCondition(key="ft",
-                                                                                    match=models.MatchValue(
-                                                                                        value="chapter")),
-                                                          ]
-                                                      ), limit=10)
+                similar_docs = vector_db.query_points(
+                    collection_name="activities",
+                    prefetch=[
+                        models.Prefetch(
+                            query=chapter.vector["text-title"],
+                            using="text-title",
+                            limit=10,
+                            filter=models.Filter(
+                                must_not=[
+                                    models.FieldCondition(key="ft",
+                                                          match=models.MatchValue(
+                                                              value="chapter")),
+                                ]
+                            )
+                        ),
+                        models.Prefetch(
+                            query=chapter.vector["text-body"],  # <-- dense vector
+                            using="text-body",
+                            limit=10,
+                            filter=models.Filter(
+                                must_not=[
+                                    models.FieldCondition(key="ft",
+                                                          match=models.MatchValue(
+                                                              value="chapter")),
+                                ]
+                            )
+                        ),
+                    ],
+                    query=models.FusionQuery(fusion=models.Fusion.RRF),
+                    with_payload=True,
+                )
 
                 for activity in similar_docs.points:
                     try:
@@ -189,12 +211,12 @@ def process_activity(activity, hf: HuggingFaceEmbeddings, vector_db: QdrantClien
             pdf_stream = download_pdf(url)
             text = extract_text_from_pdf(pdf_stream)
 
-            embedded = hf.embed_query(text)
+            body_embeddings = hf.embed_query(text)
 
             vector_db.upsert("activities", points=[
                 models.PointStruct(
                     id=objectid_to_uuid(str(activity['_id'])),
-                    vector={"text-body": embedded, "text-title": hf.embed_query(activity['dn'])},
+                    vector={"text-body": body_embeddings, "text-title": hf.embed_query(activity['dn'])},
                     payload={"key1": activity.get("key1", ""), "collection": "activities",
                              "source_id": str(activity['_id']), "title": activity['dn'], "ft": "pdf"},
                 ),
