@@ -1,10 +1,6 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 import argparse
 
 from appai.common.split import split
-from appai.common.config import *
 from pymongo import MongoClient
 
 #parses the location parameter from the command into a string

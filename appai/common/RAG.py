@@ -1,13 +1,10 @@
-import sys
 import os
-from langchain_community.vectorstores import Chroma
-from langchain_community.embeddings import FastEmbedEmbeddings
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.schema.runnable import RunnablePassthrough
-from langchain_community.vectorstores import FAISS
+from langchain_community.vectorstores import FAISS # TODO: no more faiss
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from .config import *
 from langchain_openai import ChatOpenAI
