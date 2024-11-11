@@ -39,10 +39,8 @@ RUN mkdir -p /root/.streamlit
 COPY dotstreamlit/config.toml /root/.streamlit
 
 
-# Now let's create a local models
-#RUN curl https://ollama.ai/install.sh | sh
-#COPY setup.sh /app/setup.sh
-#COPY pull.sh /app/pull.sh
+# Now let's do local directory structure setup
+COPY setup.sh /app/setup.sh
 
 
 # loomaai specific configuration 
