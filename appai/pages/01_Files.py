@@ -68,23 +68,6 @@ def FilesUI(basedir):
                     dbutton = actctr2.button("Delete")
                     if dbutton:
                         dirc.delete_files(edited_df[edited_df["Select"]])
-    # TODO
-    col1, col2 = st.columns(2)
-    with col1:
-        ctr1 = st.container()
-        url = ctr1.text_input("Enter Document URL", value="")
-        getdoc = ctr1.button("Get Docs")
-        if getdoc:
-            p = GetDocument(url)
-            st.session_state[dirc.dirname].append(p)
-    with col2:
-        ctr2 = st.container()
-        url = ctr2.text_input("Enter News Article URL", value="")
-        getarticle = ctr2.button("Get Article")
-        if getarticle:
-            p = GetArticle(url)
-            st.session_state[dirc.dirname].append(p)
-
 
 
 try:
