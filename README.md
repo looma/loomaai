@@ -94,7 +94,7 @@ When importing a common library from CLI: `from ..common.generate import generat
 * In CLI
   * Make sure you are in the root directory  
   * Use the follow command in the terminal: 
-    `python3 -m appai.cli.split data/files/chapters (prefix of what textbook to split, such as 5M, or 'all' for splitting all the textbooks into chapters)`
+    `python3 -m appai.cli.split data/files/chapters` followed by the prefix of what textbook to split, such as 5M, or 'all' for splitting all the textbooks into chapters
 * In Streamlit
   * Create the data/files/chapters folder in the loomaai repo if it is not already there.
   * In the textbox of the streamlit app, type in the prefix of what textbook to split, such as 5M, or 'all' for splitting all textbooks into chapters. 
