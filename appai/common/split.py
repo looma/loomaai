@@ -7,7 +7,6 @@ from pymongo import MongoClient
 
 #function takes in the variable connecting to MongoDB and the location of where the pdfs are supposed to go
 def split(client: MongoClient, files_dir: str, textbooks: str): 
-
     #navigates to the chapter collection in the looma database
     db = client.get_database("looma")
     collection = db.get_collection("chapters")
@@ -29,21 +28,26 @@ def split(client: MongoClient, files_dir: str, textbooks: str):
                     firstPage = chapter['pn'] - 1
                     lastPage = chapter['pn'] + chapter['len'] - 2
                     fn = 'fn'
+                    lang1 = 'en'
                 elif (chapter['npn'] != '' and chapter['pn'] != ''):
                     firstPage = chapter['pn'] - 1
                     lastPage = chapter['pn'] + chapter['len'] - 2
                     fn = 'fn'
+                    lang1 = 'en'
                     nfirstPage = chapter['npn'] - 1
                     nlastPage = chapter['npn'] + chapter['nlen'] - 2
                     nfn = 'nfn'
+                    lang2 = 'np'
                 elif chapter['pn'] == '' and chapter['npn'] != '':
                     firstPage = chapter['npn'] - 1
                     lastPage = chapter['npn'] + chapter['nlen'] - 2
                     fn = 'nfn'
+                    lang1 = 'np'
             elif 'pn' not in chapter:
                 firstPage = chapter['npn'] - 1
                 lastPage = chapter['npn'] + chapter['nlen'] - 2
                 fn = 'nfn'
+                lang1 = 'en'
             if firstPage == "" or lastPage == "":
                 continue
             
@@ -70,7 +74,7 @@ def split(client: MongoClient, files_dir: str, textbooks: str):
             chapter_pdf.insert_pdf(textbook_pdf, from_page=firstPage, to_page=lastPage)
 
             #creates a variable with the save location and saves the pdf into that location
-            save_loc = f'{files_dir}/{textbook["fp"]}textbook_chapters'
+            save_loc = f'{files_dir}/{textbook["fp"]}{lang1}'
             os.makedirs(save_loc, exist_ok=True)
             save_name = f"{chapter['_id']}.pdf"
             save_info = os.path.join(save_loc, save_name)
@@ -86,7 +90,7 @@ def split(client: MongoClient, files_dir: str, textbooks: str):
                 nchapter_pdf = fitz.open()
                 nchapter_pdf.insert_pdf(ntextbook_pdf, from_page=nfirstPage, to_page=nlastPage)
 
-                nsave_loc = f'{files_dir}/{textbook["fp"]}textbook_chapters_nepali'
+                nsave_loc = f'{files_dir}/{textbook["fp"]}{lang2}'
                 os.makedirs(nsave_loc, exist_ok=True)
                 nsave_name = f"{chapter['_id']}-nepali.pdf"
                 nsave_info = os.path.join(nsave_loc, nsave_name)

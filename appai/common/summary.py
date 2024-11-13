@@ -1,16 +1,7 @@
 from langchain_openai import ChatOpenAI
-from multilingual_pdf2text.pdf2text import PDF2Text
-from multilingual_pdf2text.models.document_model.document import Document 
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
-import pytesseract
-import os
 import fitz
-
-# Configuration for Tesseract OCR
-pytesseract.pytesseract.tesseract_cmd = r'/opt/homebrew/bin/tesseract'
-os.environ['TESSDATA_PREFIX'] = r'/opt/homebrew/share/tessdata'
-
 
 class Summary:
     def __init__(self, cfg, pdf_path):
@@ -18,35 +9,16 @@ class Summary:
         openai_api_key = cfg.getv("openai_api_key")
         self.llm = ChatOpenAI(temperature=0, model_name="gpt-4o-mini", api_key=openai_api_key)
 
-# excracting nepali text from nepali textbooks
-    def extract_text_nepali(self):
-        pdf_document = Document(document_path=self.filename, language='nep')
-        pdf2text = PDF2Text(document=pdf_document)
-        content = pdf2text.extract()
-        text_content = ''
-        for page in content:
-            text_content += page['text']
-        return text_content
-    
-#extracting English text from English textbooks
-    def extract_text_english(self):
+#extracts the text from the chapter pdf
+    def extract_text(self):
         pdf = fitz.open(self.filename)
         text_content = ''
 
         for page in pdf:
             text = page.get_text()
             text_content += text
-        return text_content
-    
-#calling the specific function whether to extract English text or Nepali text
-    def extract_text_from_pdf(self, chapter_language):
-        if chapter_language == "Nepali":
-            return self.extract_text_nepali()
-        elif chapter_language == "English":
-            return self.extract_text_english()
-        else:
-            raise ValueError("Not Nepali or English. Please enter a different document")
-        
+        return text_content            
+
 #use the extracted text to send to OpenAI to summarize in ChatGPT
     def summarize_text(self, text, chapter_language):
         summarize_prompt = PromptTemplate(
@@ -59,8 +31,8 @@ class Summary:
     
 #returning the summary
     def summarize_pdf(self, chapter_language):
-        text_content = self.extract_text_from_pdf(chapter_language)
-        summary = self.summarize_text( text_content, chapter_language)
+        text_content = self.extract_text()
+        summary = self.summarize_text(text_content, chapter_language)
         return summary
     
 #translating the text into either Nepali or English

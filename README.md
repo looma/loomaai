@@ -89,3 +89,14 @@ When importing a common library from CLI: `from ..common.generate import generat
 * To run a script in CLI, run it like this from the root directory: `python3 -m appai.cli.generate`
   * The -m flag is important, do not use the filename
 * When importing a common library from pages: `from common.query_faiss import query`
+
+### Chapter Splitting
+* In CLI
+  * Make sure you are in the root directory  
+  * Use the follow command in the terminal: 
+    python3 -m appai.cli.split data/files/chapters (prefix of what textbook to split, such as 5M, or 'all' for splitting all the textbooks into chapters)
+* In Streamlit
+  * Create the data/files/chapters folder in the loomaai repo if it is not already there.
+  * In the textbox of the streamlit app, type in the prefix of what textbook to split, such as 5M, or 'all' for splitting all textbooks into chapters. 
+  * Click the "Split Chapters" button
+The chapters should be in the "data/files/chapters" folder in the loomaai repo

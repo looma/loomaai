@@ -40,7 +40,7 @@ def main():
 #calling summary from common and summarizing the text from the PDF into streamlit
         if st.button("Summarize"):
             with st.spinner("Summarizing..."):
-                text_content = summarizer.extract_text_from_pdf(chapter_language)
+                text_content = summarizer.extract_text()
                 summary = summarizer.summarize_text(text_content, chapter_language)
                 st.session_state["content"] = summary
                 st.session_state["summary_generated"] = True
