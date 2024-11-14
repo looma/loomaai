@@ -103,7 +103,7 @@ When importing a common library from CLI: `from ..common.generate import generat
 The chapters should be in the `data/files/chapters` folder in the loomaai repo.
 
 ### Chapter Summaries
-* IN CLI
+* In CLI
   * Make sure you are in the root directory and that the API is in the config.json file.
   * Use the following command to summarize the chapters:
     `python3 -m appai.cli.summary summary` followed by the file path to the chapter followed by the language the chapter is in.
