@@ -92,11 +92,23 @@ When importing a common library from CLI: `from ..common.generate import generat
 
 ### Chapter Splitting
 * In CLI
-  * Make sure you are in the root directory  
+  * Make sure you are in the root directory.  
   * Use the follow command in the terminal: 
-    `python3 -m appai.cli.split data/files/chapters` followed by the prefix of what textbook to split, such as 5M, or 'all' for splitting all the textbooks into chapters
+    `python3 -m appai.cli.split data/files/chapters` followed by the prefix of what textbook to split, such as 5M, or 'all' for splitting all the textbooks into chapters.
+  * Example use: `python3 -m appai.cli.split data/files/chapters 5M`
 * In Streamlit
   * Create the `data/files/chapters` folder in the loomaai repo if it is not already there.
   * In the textbox of the streamlit app, type in the prefix of what textbook to split, such as 5M, or 'all' for splitting all textbooks into chapters. 
-  * Click the "Split Chapters" button
-The chapters should be in the `data/files/chapters` folder in the loomaai repo
+  * Click the "Split Chapters" button.
+The chapters should be in the `data/files/chapters` folder in the loomaai repo.
+
+### Chapter Summaries
+* IN CLI
+  * Make sure you are in the root directory and that the API is in the config.json file.
+  * Use the following command to summarize the chapters:
+    `python3 -m appai.cli.summary summary` followed by the file path to the chapter followed by the language the chapter is in.
+  * Example use: `python3 -m appai.cli.summary summary data/files/chapters/textbooks/Class10/Nepali/np/10N01.pdf Nepali`
+* In streamlit
+  * Selected the chapter to be summarized from your file explorer.
+  * Make sure the language selected in the options is the language the chapter is in.
+  * Click the Summarize button.

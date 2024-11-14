@@ -23,11 +23,15 @@ class Config:
     def show(self):
         pprint.pprint(self.jfile)
 
-def ConfigInit():
+def ConfigInit(location):
     logzero.logfile("loomaai.log")
     home = str(Path.home())
     print(str(Path.home()) + " PATH HOME")
-    filename = home + "/.config/loomaai/config.json"
+    if location == "streamlit":
+        filename = home + "/.config/loomaai/config.json"
+    elif location == "CLI":
+        #replace with the location of the config.json file in the loomaai repo
+        filename = "/Users/praneelnemani/Documents/Looma/loomaai/config.json"
     cfg = Config(filename)
     logger.debug("LoomaAI initialized")
     return cfg

@@ -4,19 +4,19 @@ import argparse
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 
-from appai.common.config import *
-from appai.common.summary import *
+from ..common.config import *
+from ..common.summary import *
 
 #summary for Summary calling summary to summarize text from pdf
 def summary(filename, lang: str):
-    cfg = ConfigInit()
+    cfg = ConfigInit("CLI")
     summarizer = Summary(cfg, filename)
     summary = summarizer.summarize_pdf(lang)
     print(summary)
     
 #translate for Summary calling translate to translate text
 def translate(filename, lang: str):
-    cfg = ConfigInit()
+    cfg = ConfigInit("CLI")
     translator = Summary(cfg, filename)
     translated_text = translator.translate_pdf(lang)
     print(translated_text)

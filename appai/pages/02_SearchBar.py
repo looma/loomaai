@@ -29,7 +29,7 @@ for message in st.session_state.messages:
 
 if prompt := st.chat_input("Search Message ..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
-    cfg = ConfigInit()
+    cfg = ConfigInit("streamlit")
     with st.chat_message("user"):
         results = query(prompt, qclient)
         st.json([e for e in results])
