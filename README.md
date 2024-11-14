@@ -108,7 +108,7 @@ The chapters should be in the `data/files/chapters` folder in the loomaai repo.
   * Use the following command to summarize the chapters:
     `python3 -m appai.cli.summary summary` followed by the file path to the chapter followed by the language the chapter is in.
   * Example use: `python3 -m appai.cli.summary summary data/files/chapters/textbooks/Class10/Nepali/np/10N01.pdf Nepali`
-* In streamlit
+* In Streamlit
   * Selected the chapter to be summarized from your file explorer.
   * Make sure the language selected in the options is the language the chapter is in.
   * Click the Summarize button.
