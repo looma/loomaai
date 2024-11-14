@@ -71,7 +71,7 @@ def FilesUI(basedir):
 
 
 try:
-    cfg = ConfigInit()
+    cfg = ConfigInit("streamlit")
     if 'datadir' not in st.session_state:
         st.session_state['datadir'] = cfg.getv("datadir")
     FilesUI(st.session_state['datadir'])
