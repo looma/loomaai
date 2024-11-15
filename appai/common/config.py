@@ -1,4 +1,5 @@
 import json
+import os
 import pprint
 import logzero
 from logzero import logger 
@@ -19,20 +20,17 @@ class Config:
     def save(self, filename):
         with open(filename, 'w') as f:
             json.dump(self.jfile, f, indent=4)
-
+    def json(self):
+        return self.jfile
     def show(self):
         pprint.pprint(self.jfile)
 
-def ConfigInit(location):
-    logzero.logfile("loomaai.log")
+def ConfigInit():
+    logzero.logfile(os.getcwd() + "loomaai.log")
     home = str(Path.home())
-    print(str(Path.home()) + " PATH HOME")
-    if location == "streamlit":
-        filename = home + "/.config/loomaai/config.json"
-    elif location == "CLI":
-        #replace with the location of the config.json file in the loomaai repo
-        filename = "/Users/praneelnemani/Documents/Looma/loomaai/config.json"
+    logger.info("HOME: " + str(Path.home()))
+    filename = home + "/.config/loomaai/config.json"
+    logger.info("Config file: " + filename)
     cfg = Config(filename)
-    logger.debug("LoomaAI initialized")
+    logger.debug("loomaai initialized")
     return cfg
-

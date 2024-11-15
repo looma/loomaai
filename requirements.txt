@@ -114,3 +114,4 @@ tzdata==2024.2
 urllib3==2.2.3
 yarl==1.17.1
 pymupdf4llm
+streamlit_js_eval

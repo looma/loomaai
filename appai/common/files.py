@@ -1,43 +1,54 @@
 import os
 import pathlib
+import shutil
 import time
+from typing import List, Tuple
 import pandas as pd
+from logzero import logger
 import pymupdf4llm
 
 class Directory:
-    def __init__(self, basedir):
-        self.dirname = basedir + "/" + "files"
+    def __init__(self, basedir: str):
+        self.dirname = os.path.join(basedir, "files")
         self.basepath = pathlib.Path(self.dirname)
 
-    def files(self, pattern):
+    def files(self, pattern: str) -> List[Tuple[str, str, str, str]]:
         all_files = []
         for i in self.basepath.rglob(pattern):
-            parent = str(i.parent).split("/")[-1]
-            #name = parent + "/" + i.name
-            name = i.name
-            #all_files.append((name, parent, time.ctime(i.stat().st_ctime)))
-            all_files.append((name, time.ctime(i.stat().st_ctime)))
+            parent = i.parent.name
+            sname = str(i.relative_to(self.dirname))
+            ftype = ""
+            if i.is_dir():
+                ftype = "📂 Directory"
+            if i.is_file():
+                ftype = "🗒️ File"
+            if i.is_symlink():
+                ftype = "🔗 Symlink"
+            ctime = time.localtime(i.stat().st_ctime)
+            stime = time.strftime("%Y-%m-%d %H:%M:%S", ctime)
+            all_files.append((sname, ftype, parent, stime))
         return all_files
-
-    def df(self, filelist):
-        #cols = ["File", "Parent", "Created"]
-        cols = ["File", "Created"]
-        df = pd.DataFrame.from_records(filelist, columns=cols)
-        df["Select"]=False
-        return df
+    
+    def fullpath(self, file: str) -> str:
+        return os.path.join(self.dirname, file)
+    
+    def df(self, filelist: List[Tuple[str, str, str, str]]) -> pd.DataFrame:
+        cols = ["File", "Type", "Parent", "Created"]
+        return pd.DataFrame(filelist, columns=cols)
 
     def delete_files(self, df):
         for f in df["File"]:
-            filename = self.dirname + "/" + f
-            if os.path.isfile(filename):
-                os.remove(filename)
-            if os.path.isdir(filename):
-                os.rmdir(filename)
+            fname = self.fullpath(f)
+            logger.info(f"Deleting {fname}")
+            if os.path.isfile(fname):
+                os.remove(fname)
+            if os.path.isdir(fname):
+                shutil.rmtree(fname) 
+                #os.rmdir(fname)
 
     def convert_file(self, file_path):
         file_name = os.path.basename(file_path)
         md_text = pymupdf4llm.to_markdown(file_path)
-        #st.markdown(md_text)
         mdpath = file_path + "-mdown"
         if not os.path.exists(mdpath): 
             os.mkdir(mdpath)
@@ -47,4 +58,6 @@ class Directory:
 
     def convert_files(self, df):
         for f in df["File"]:
-            self.convert_file(self.dirname + "/" + f)
+            fname = self.fullpath(f)
+            logger.info(f"Converting {fname}")
+            self.convert_file(fname)
