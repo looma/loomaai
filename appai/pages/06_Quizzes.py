@@ -1,10 +1,14 @@
+import os
+import sys
 import io
 import zipfile
 import tempfile
-import streamlit as st
-from common.config import *
-from common.summary import *
 from common.summary import Summary
+import streamlit as st
+from streamlit_chat import message
+from common.config import *
+from langchain_openai import ChatOpenAI
+from common.summary import *
 
 # Defining the filepath for uploading the file that needs to be summarized
 def filePath(file):
@@ -30,38 +34,38 @@ def fileUpload(key):
 
 # Main streamlit application
 def main():
-    st.title("Page Summarizer")
+    st.title("Quiz Maker")
     cfg = ConfigInit()
 
     # Allow multiple PDF files to be uploaded
     file_paths = fileUpload("04_1")
 
-    # For the summary loading visualization
-    if "summary_generated" not in st.session_state:
-        st.session_state["summary_generated"] = False
+    # For the quiz loading visualization
+    if "quizzes_generated" not in st.session_state:
+        st.session_state["quizzes_generated"] = False
 
     if file_paths:
-        if st.button("Summarize All PDFs"):
-            summaries = []
-            with st.spinner("Summarizing..."):
+        if st.button("Quizzes for all PDFs"):
+            quizzes = []
+            with st.spinner("Generating..."):
                 for file_path in file_paths:
-                    summarizer = Summary(cfg, file_path)
+                    quizzer = Summary(cfg, file_path)
                     
                     # Extract text from the PDF
-                    text_content = summarizer.extract_text_from_pdf()
+                    text_content = quizzer.extract_text_from_pdf()
 
                     # Generate the summary
-                    quiz = summarizer.quiz_pdf(text_content)
-                    summaries.append(quiz)
-                # Display summaries for each PDF
-                for i, quiz in enumerate(summaries):
-                    st.write(f"### Quiz of File {i+1}")
-                    st.info(quiz)
+                    quiz = quizzer.quiz_pdf(text_content)
+                    quizzes.append(quiz)
             
+            # Display summaries for each PDF
+            for i, quiz in enumerate(quizzes):
+                st.write(f"### Quiz of File {i+1}")
+                st.info(quiz)
 
             # Store the summaries in session state
-            st.session_state["content"] = summaries
-            st.session_state["summary_generated"] = True
+            st.session_state["content"] = quizzes
+            st.session_state["quizzes_generated"] = True
             '''if st.button("Download the summaries", summaries):
                 zip_buffer = io.BytesIO()
 

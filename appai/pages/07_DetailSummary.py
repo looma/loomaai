@@ -1,10 +1,14 @@
+import os
+import sys
 import io
 import zipfile
 import tempfile
-import streamlit as st
-from common.config import *
-from common.summary import *
 from common.summary import Summary
+import streamlit as st
+from streamlit_chat import message
+from common.config import *
+from langchain_openai import ChatOpenAI
+from common.summary import *
 
 # Defining the filepath for uploading the file that needs to be summarized
 def filePath(file):
@@ -30,7 +34,7 @@ def fileUpload(key):
 
 # Main streamlit application
 def main():
-    st.title("Page Summarizer")
+    st.title("Detailed Page Summarizer")
     cfg = ConfigInit()
 
     # Allow multiple PDF files to be uploaded
@@ -51,13 +55,13 @@ def main():
                     text_content = summarizer.extract_text_from_pdf()
 
                     # Generate the summary
-                    quiz = summarizer.quiz_pdf(text_content)
-                    summaries.append(quiz)
-                # Display summaries for each PDF
-                for i, quiz in enumerate(summaries):
-                    st.write(f"### Quiz of File {i+1}")
-                    st.info(quiz)
+                    summary = summarizer.detailSummary_pdf(text_content)
+                    summaries.append(summary)
             
+            # Display summaries for each PDF
+            for i, summary in enumerate(summaries):
+                st.write(f"### Summary of File {i+1}")
+                st.info(summary)
 
             # Store the summaries in session state
             st.session_state["content"] = summaries

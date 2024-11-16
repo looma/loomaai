@@ -16,7 +16,7 @@ def summary(filename, lang: str):
     
 #translate for Summary calling translate to translate text
 def translate(filename, lang: str):
-    cfg = ConfigInit("CLI")
+    cfg = ConfigInit()
     translator = Summary(cfg, filename)
     translated_text = translator.translate_pdf(lang)
     print(translated_text)
@@ -34,7 +34,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if args.command == "summary":
         summary(args.filename, args.language)
-    elif args.command == "translate":
-        translate(args.filename, args.language)
     else:
         print(f"Unknown command '{args.command}'")
