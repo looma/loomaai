@@ -1,4 +1,4 @@
-from ..common.embed import populate_relevant_resources
+from populate_relevant_resources import populate_relevant_resources
 
 from pymongo import MongoClient
 from qdrant_client import QdrantClient
