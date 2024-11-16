@@ -10,7 +10,6 @@ RUN apt update && apt upgrade -y
 RUN #apt install gcc make -y
 
 RUN #apt install -y vim bash git net-tools curl
-RUN #apt install -y tesseract-ocr poppler-utils libtesseract-dev
 RUN #mkdir /usr/share/tessdata
 # RUN curl -L https://github.com/tesseract-ocr/tessdata/raw/main/nep.traineddata -o /usr/share/tessdata/nep.traineddata
 
