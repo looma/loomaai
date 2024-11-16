@@ -23,7 +23,7 @@ def fileUpload(key):
 #main streamlit application
 def main():
     st.title("Page Summarizer")
-    cfg = ConfigInit("streamlit")
+    cfg = ConfigInit()
 
     file = fileUpload("04_1")
     file_path = None if file is None else file
