@@ -1,125 +1,17 @@
-import re
-
-import bson
 from pymongo import MongoClient
 
 from langchain_huggingface import HuggingFaceEmbeddings
-from bs4 import BeautifulSoup
 from qdrant_client import QdrantClient
 from qdrant_client import models
-import requests
-import fitz  # PyMuPDF
-from io import BytesIO
 
-
-def download_pdf(url):
-    response = requests.get(url)
-    response.raise_for_status()
-    return BytesIO(response.content)
-
-
-def extract_text_from_pdf(pdf_stream):
-    pdf_document = fitz.open(stream=pdf_stream, filetype="pdf")
-    text = ""
-
-    for page_num in range(len(pdf_document)):
-        page = pdf_document.load_page(page_num)
-        text += page.get_text()
-
-    pdf_document.close()
-    return text
-
-
-def get_visible_text(url):
-    try:
-        # Fetch the HTML content from the URL
-        response = requests.get(url)
-        response.raise_for_status()  # Raise an exception for HTTP errors
-
-        # Parse the HTML content with BeautifulSoup
-        soup = BeautifulSoup(response.text, 'html.parser')
-
-        # Extract visible text
-        # Get text from all tags and strip extra whitespace
-        text = soup.get_text(separator='\n', strip=True)
-
-        return text
-
-    except requests.RequestException as e:
-        print(f"Error fetching the URL: {e}")
-        return None
-
-
-# only use for ft=chapter
-def populate_relevant_resources(mongo_client: MongoClient, vector_db: QdrantClient):
-    offset = None
-    while True:
-        (results, offset) = vector_db.scroll(
-            collection_name="activities",  # Replace with your collection name
-            scroll_filter=models.Filter(
-                must=[
-                    models.FieldCondition(key="ft",
-                                          match=models.MatchValue(value="chapter")),
-                ]
-            ),
-            limit=10,
-            with_vectors=True,
-            offset=offset
-        )
-
-        for chapter in results:
-            try:
-                similar_docs = vector_db.query_points(
-                    collection_name="activities",
-                    prefetch=[
-                        models.Prefetch(
-                            query=chapter.vector["text-title"],
-                            using="text-title",
-                            limit=10,
-                            filter=models.Filter(
-                                must_not=[
-                                    models.FieldCondition(key="ft",
-                                                          match=models.MatchValue(
-                                                              value="chapter")),
-                                ]
-                            )
-                        ),
-                        models.Prefetch(
-                            query=chapter.vector["text-body"],  # <-- dense vector
-                            using="text-body",
-                            limit=10,
-                            filter=models.Filter(
-                                must_not=[
-                                    models.FieldCondition(key="ft",
-                                                          match=models.MatchValue(
-                                                              value="chapter")),
-                                ]
-                            )
-                        ),
-                    ],
-                    query=models.FusionQuery(fusion=models.Fusion.RRF),
-                    with_payload=True,
-                )
-
-                for activity in similar_docs.points:
-                    try:
-                        mongo_client.get_database("looma").get_collection("activities").update_one(
-                            {"_id": bson.ObjectId(activity.payload["source_id"])},
-                            {"$addToSet": {"ch_id": chapter.payload["chapter_id"]}})
-                        print(f"Updated relevant resources for chapter {chapter.payload['chapter_id']}")
-                    except Exception as e:
-                        print(f"Error updating activity {activity.payload['source_id']}: {e}")
-            except Exception as e:
-                print(f"Error processing chapter {chapter.payload['chapter_id']}: {e}")
-
-        if offset is None:
-            print("Done")
-            return
-
+from ..common.activity import Activity
+from ..common.activity_pdf import PdfActivity
+from ..common.activity_html import HtmlActivity
+from ..common.activity_chapter import ChapterActivity
 
 from alive_progress import alive_bar
 from concurrent.futures import ThreadPoolExecutor, as_completed
-
+from pymongo.database import Database
 
 def generate_vectors(mongo_client: MongoClient, vector_db: QdrantClient):
     db = mongo_client.get_database("looma")
@@ -140,87 +32,38 @@ def generate_vectors(mongo_client: MongoClient, vector_db: QdrantClient):
         # Use ThreadPoolExecutor to speed up the loop
         with ThreadPoolExecutor() as executor:
             # Submit tasks to the pool
-            futures = {executor.submit(process_activity, activity, hf, vector_db, db): activity for activity in
-                       activities}
+            futures = {}
+
+            for activity in activities:
+                ac: Activity
+                if activity["ft"] == "html":
+                    ac = HtmlActivity(activity)
+                if activity["ft"] == "pdf":
+                    ac = PdfActivity(activity)
+                if activity["ft"] == "chapter":
+                    ac = ChapterActivity(activity)
+                futures[executor.submit(process_activity, ac, hf, vector_db, db)] = ac
 
             # Ensure all futures complete and get the result (if needed)
             for future in as_completed(futures):
                 activity = futures[future]
                 try:
                     future.result()  # Get the result if needed, or handle any exceptions
+                    print(f"[Success]", activity.activity['_id'])
                 except Exception as e:
-                    print("Error: ", e, "Activity:", activity["_id"])
+                    print("[Error]", e, "Activity:", activity.activity["_id"])
                 progress_bar()
-        for activity in activities:
-            process_activity(activity, hf, vector_db, db)
 
-
-# db argument is the mongo looma database (not client)
-def process_activity(activity, hf: HuggingFaceEmbeddings, vector_db: QdrantClient, db):
-    match activity['ft']:
-        case "chapter":
-            # activity['ID'] is the chapter ID (not the activity objectid)
-            groups = re.search(r"([1-9]|10|11|12)(EN|ENa|Sa|S|SF|Ma|M|SSa|SS|N|H|V|CS)[0-9]{2}(\.[0-9]{2})?",
-                               activity['ID'], re.IGNORECASE)
-            grade_level = groups[1]  # grade level
-            subject = groups[2]
-            textbook = db.textbooks.find_one({"prefix": grade_level + subject})
-            url = f"https://looma.website/content/chapters/{textbook['fp'].removeprefix("textbooks/")}textbook_chapters/{activity['ID']}.pdf"
-
-            pdf_stream = download_pdf(url)
-            text = extract_text_from_pdf(pdf_stream)
-
-            embeddings = hf.embed_query(text)
-
-            vector_db.upsert("activities", points=[
-                models.PointStruct(
-                    id=objectid_to_uuid(str(activity['_id'])),
-                    vector={"text-body": embeddings, "text-title": hf.embed_query(activity['dn'])},
-                    payload={"key1": activity.get("key1", ""), "collection": "activities",
-                             "source_id": str(activity['_id']), "title": activity['dn'], "ft": "chapter",
-                             "chapter_id": activity['ID']},
-                ),
-            ])
-
-            print(f"[] [Added chapter to vector DB]", url)
-        case "html":
-            url = f"http://looma.website/{activity['fp']}{activity['fn']}"
-            text = get_visible_text(url)
-
-            embeddings = hf.embed_query(text)
-
-            vector_db.upsert("activities", points=[
-                models.PointStruct(
-                    id=objectid_to_uuid(str(activity['_id'])),
-                    vector={"text-body": embeddings, "text-title": hf.embed_query(activity['dn'])},
-                    payload={"key1": activity.get("key1", ""), "collection": "activities",
-                             "source_id": str(activity['_id']), "title": activity['dn'], "ft": "html"},
-                ),
-            ])
-
-            print(f"[] [Added document to vector DB]", url)
-        case "mp4":
-            # TODO: video embedding
-            pass
-        case "pdf":
-            # https://looma.website/content/pdfs/What_Time_Do_You.pdf
-            fp = activity['fp'] if 'fp' in activity else '../content/pdfs/'
-            url = f"https://looma.website/{fp}{activity['fn']}"
-            pdf_stream = download_pdf(url)
-            text = extract_text_from_pdf(pdf_stream)
-
-            body_embeddings = hf.embed_query(text)
-
-            vector_db.upsert("activities", points=[
-                models.PointStruct(
-                    id=objectid_to_uuid(str(activity['_id'])),
-                    vector={"text-body": body_embeddings, "text-title": hf.embed_query(activity['dn'])},
-                    payload={"key1": activity.get("key1", ""), "collection": "activities",
-                             "source_id": str(activity['_id']), "title": activity['dn'], "ft": "pdf"},
-                ),
-            ])
-            print(f"[] [Added PDF to vector DB]", url)
-
+def process_activity(activity: Activity, hf: HuggingFaceEmbeddings, vector_db: QdrantClient, db: Database):
+    embeddings = activity.embed(mongo=db, embeddings=hf)
+    payload = activity.payload()
+    vector_db.upsert("activities", points=[
+        models.PointStruct(
+            id=objectid_to_uuid(str(activity.activity['_id'])),
+            vector={"text-body": embeddings, "text-title": hf.embed_query(activity.activity.get('dn', ''))},
+            payload=payload
+        ),
+    ])
 
 def create_collection_if_not_exists(collection_name: str, client: QdrantClient):
     # Check if the collection exists
@@ -244,7 +87,6 @@ def create_collection_if_not_exists(collection_name: str, client: QdrantClient):
 
     print(f"Collection '{collection_name}' created successfully.")
 
-
 def objectid_to_uuid(objectid):
     """
     Convert a 24-character ObjectId (hexadecimal string) to a UUID format.
@@ -266,7 +108,6 @@ def objectid_to_uuid(objectid):
     uuid = f"{padded_objectid[0:8]}-{padded_objectid[8:12]}-{padded_objectid[12:16]}-{padded_objectid[16:20]}-{padded_objectid[20:32]}"
 
     return uuid
-
 
 def uuid_to_objectid(uuid):
     """
