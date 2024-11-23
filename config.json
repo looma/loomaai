@@ -3,8 +3,8 @@
     "openai_api_key" : "sk-",
     "datadir": "/app/data",
     "qdrant": {
-        "host": "localhost",
-        "port": 6333,
+        "host": "qdrant",
+        "port": 46333,
         "index": "loomaai"
     }
 }
