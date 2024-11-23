@@ -1,7 +1,7 @@
 {
     "name": "loomaai",
     "openai_api_key" : "sk-",
-    "datadir": "/app/data",
+    "datadir": "/app/data/files",
     "qdrant": {
         "host": "qdrant",
         "port": 46333,
