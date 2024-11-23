@@ -5,7 +5,7 @@ LAIC_VERSION=latest
 LAIC_CTR=loomaai
 
 LOOMA_HOME=$(shell pwd)
-DATAVOL=$(LOOMA_HOME)/data/files/chapters
+DATAVOL=$(LOOMA_HOME)/data/files
 SRCDIR=$(LOOMA_HOME)
 
 all: $(LAIC_IMAGE)
@@ -17,7 +17,7 @@ $(LAIC_IMAGE):
 
 run: $(DATAVOL)
 	$(DOCKER) run -tid -p 4700:4700 \
-		-v $(DATAVOL):/app/data \
+		-v $(DATAVOL):/app/data/files \
 		-v ./appai:/app/appai --name $(LAIC_CTR) $(LAIC_IMAGE)
 $(DATAVOL):
 	mkdir -p $(DATAVOL)
