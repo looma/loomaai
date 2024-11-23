@@ -9,7 +9,7 @@ from common.config import *
 from langchain_openai import ChatOpenAI
 from common.summary import *
 from common.config import ConfigInit
-
+from common.streamlit_mongo_viewer import mongodb_viewer
 # Defining the filepath for uploading the file that needs to be summarized
 def filePath(file):
     if file is not None:
@@ -34,6 +34,33 @@ def fileUpload(key):
 
 def ChaptersUI(cfg):
     st.title("Chapters")
+    MONGO_URI = "mongodb://host.docker.internal:47017"
+    DATABASE_NAME = "looma"
+
+    with st.expander("Select Textbooks", expanded=True):
+        selected_textbooks = mongodb_viewer(
+            client_uri=MONGO_URI,
+            database_name=DATABASE_NAME,
+            collection_name="textbooks",
+            filters={},
+            columns=["_id", "dn", "prefix"]
+        )
+
+    if len(selected_textbooks) > 0:
+        with st.expander("Select Chapters", expanded=True):
+            prefixes = [textbook["prefix"] for textbook in selected_textbooks]
+            selected_chapters = mongodb_viewer(
+                client_uri=MONGO_URI,
+                database_name=DATABASE_NAME,
+                collection_name="chapters",
+                filters={
+                    "_id": {"$regex": "^(" + "|".join(prefixes) + ")"}
+                },
+                columns=["_id", "dn"]
+            )
+            st.json(selected_chapters)
+
+    # TODO: get the file names for the selected chapters
 
     summary1, supersummary1, translate1, topic1, quiz1 = st.tabs(["Summary", "Detailed Summary", "Translate", "Topic", "Quiz"])
 
