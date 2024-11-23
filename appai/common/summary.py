@@ -2,7 +2,6 @@ from langchain_openai import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 import fitz
-from langdetect import detect, LangDetectException
 import streamlit as st
 
 
@@ -39,7 +38,7 @@ class Summary:
         return summary
     
 #returning the quiz
-    def quiz_pdf(self, text_content):
+    def quiz_pdf(self):
         text_content = self.extract_text()
         quiz = self.quiz_text(text_content)
         return quiz
@@ -66,3 +65,32 @@ class Summary:
         text_content = self.extract_text()
         summary = self.detailSummary_text(text_content)
         return summary
+    
+    def topic_text(self, text):
+        topic_prompt = PromptTemplate(
+            input_variables=["text"],
+            template="Please give me the main and sub topics of the text in the same language it is written in \n if the text is in Nepali keep it in Nepali and if the text is in English keep it in English\n{text}"
+        )
+        topic_chain = topic_prompt | self.llm | StrOutputParser()
+        topic = topic_chain.invoke({"text": text})
+        return topic
+    
+#returning the summary
+    def topic_pdf(self):
+        text_content = self.extract_text()
+        topic = self.topic_text(text_content)
+        return topic
+    
+    def translate_pdf(self):
+        text_content = self.extract_text()
+        translate = self.translate_text(text_content)
+        return translate
+    
+    def translate_text(self, text):
+        translate_prompt = PromptTemplate(
+            input_variables=["text"],
+            template="If the following text is in English, please translate it to Nepali. If the following text is in Nepali, please translate it to English.{text}"
+        )
+        translate_chain = translate_prompt | self.llm | StrOutputParser()
+        translate = translate_chain.invoke({"text": text})
+        return translate
