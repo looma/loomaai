@@ -19,6 +19,6 @@ if st.button("Split Chapters"):
         
         #calls the MongoClient and runs the split function in loomaai/appai/common/split.py
         client = MongoClient("mongodb://host.docker.internal:47017/")
-        split(client, datadir+"/files/chapters", textbooks)
+        split(client, datadir, textbooks)
         
         st.write("all textbook chapters have their own pdfs")
