@@ -2,6 +2,7 @@ import streamlit as st
 import json
 import os
 from common.config import *
+from common.vectordb import VectorDB
 from logzero import logging
 
 st.set_page_config(page_title="Settings", page_icon=os.path.join('images','favicon.ico'), layout="wide", menu_items=None)
@@ -22,6 +23,11 @@ def SettingsUI(cfg):
     config["qdrant"]["host"] = st.text_input("Qdrant Host", value=config["qdrant"]["host"])
     config["qdrant"]["port"] = st.number_input("Qdrant Port", value=config["qdrant"]["port"], step=1)
     config["qdrant"]["index"] = st.text_input("Qdrant Index", value=config["qdrant"]["index"])
+
+    st.link_button(
+            url=f'http://{config["qdrant"]["host"]}:{config["qdrant"]["port"]}/dashboard',
+            label=f'Qdrant Dashboard'
+    )
 
 if __name__ == "__main__":
     try:
