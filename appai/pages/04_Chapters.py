@@ -33,9 +33,10 @@ def fileUpload(key):
     return file_paths
 
 def ChaptersUI(cfg):
+    config = cfg.json()
     st.title("Chapters")
-    MONGO_URI = "mongodb://host.docker.internal:47017"
-    DATABASE_NAME = "looma"
+    MONGO_URI = f"mongodb://{config['mongo']['host']}:{config['mongo']['port']}"
+    DATABASE_NAME = f"{config['mongo']['database']}"
 
     with st.expander("Select Textbooks", expanded=True):
         selected_textbooks = mongodb_viewer(
