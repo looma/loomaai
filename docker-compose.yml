@@ -17,7 +17,7 @@ services:
     ports:
       - 47000:4700
     volumes:
-      - .data:/app/data
+      - ./data:/app/data
       - ./appai:/app/appai
     restart: always
     tty: true
