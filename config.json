@@ -6,5 +6,10 @@
         "host": "qdrant",
         "port": 46333,
         "index": "loomaai"
+    },
+    "mongo": {
+        "host": "host.docker.internal",
+        "port": 47017,
+        "database": "looma"
     }
 }
