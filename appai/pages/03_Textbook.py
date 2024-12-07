@@ -30,6 +30,7 @@ def TextbookUI(cfg):
                 #calls the MongoClient and runs the split function in loomaai/appai/common/split.py
                 client = MongoClient(MONGO_URI)
                 split(client, datadir, textbooks[0]) # TODO: make this accept multiple prefixes
+
                 st.write("all textbook chapters have their own pdfs")
 
     with remove:
