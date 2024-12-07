@@ -1,5 +1,4 @@
 import streamlit as st
-from pymongo import MongoClient
 from common.split import *
 from common.config import ConfigInit
 
@@ -45,14 +44,3 @@ if __name__ == "__main__":
 
     with embed:
         st.write('hi')
-
-
-
-
-if __name__ == '__main__':
-    try:
-        cfg = ConfigInit()
-        TextbookUI(cfg)
-    except Exception as e:
-        st.error(str(e))
-    
