@@ -11,7 +11,7 @@ def TextbookUI(cfg):
     split_text, remove, dict, embed = st.tabs(['Split Textbook', 'Remove Textbook', 'Dictionary', 'Embed'])
 
     with split_text:
-        MONGO_URI=f'mongodb://{config["mongo"]["host"]}:{config["mongo"]["port"]}/dashboard'
+        MONGO_URI=f'mongodb://{config["mongo"]["host"]}:{config["mongo"]["port"]}'
         DATABASE_NAME = f'{config["mongo"]["database"]}'
         FILTERS = {}
         selected = mongodb_viewer(

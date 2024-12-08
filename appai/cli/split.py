@@ -11,6 +11,11 @@ args = parser.parse_args()
 
 #calls the MongoClient and runs the split function in loomaai/appai/common/split.py
 #instructions on the README
-client = MongoClient("mongodb://localhost:47017/")
+
+cfg = ConfigInit()
+config = cfg.json()
+MONGO_URI = f"mongodb://{config['mongo']['host']}:{config['mongo']['port']}"
+client = MongoClient(MONGO_URI)
+
 split(client=client, files_dir=args.datadir, textbooks = args.textbook)
 print("all textbook chapters have their own pdfs")

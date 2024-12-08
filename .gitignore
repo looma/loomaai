@@ -1,4 +1,5 @@
 data/
+.data/
 *.log
 __pycache__/
 textbooks
@@ -6,4 +7,5 @@ venv
 env
 appai/textbooks
 config.json
+test.json
 .DS_Store
