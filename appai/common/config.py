@@ -38,3 +38,14 @@ def ConfigInit():
     cfg = Config(filename)
     logger.debug("loomaai initialized")
     return cfg
+
+if __name__ == "__main__":
+    cfg = ConfigInit()
+    config = cfg.json()
+    print("'name' is: ", cfg.getv("name"))
+    MONGO_URL = f"mongodb://{config['mongo']['host']}:{config['mongo']['port']}"
+    print("MONGO_URL: ", MONGO_URL)
+    QDRANT_URL = f"http://{config['qdrant']['host']}:{config['qdrant']['port']}"
+    print("QDRANT_URL: ", QDRANT_URL)
+    cfg.save("test.json")
+    
