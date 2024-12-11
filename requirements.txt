@@ -116,3 +116,4 @@ yarl==1.17.1
 pymupdf4llm
 streamlit_js_eval
 langchain_qdrant
+alive_progress

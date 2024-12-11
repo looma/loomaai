@@ -30,6 +30,11 @@ class Config:
 
 
 def ConfigInit():
+    # copy the config.json to the expected location if it does not already exist
+    if not os.path.exists(os.path.expanduser("~/.config/loomaai/config.json")):
+        os.makedirs(os.path.expanduser("~/.config/loomaai"), exist_ok=True)
+        os.system("cp config.json ~/.config/loomaai")
+
     logzero.logfile(os.getcwd() + "loomaai.log")
     home = str(Path.home())
     logger.info("HOME: " + str(Path.home()))

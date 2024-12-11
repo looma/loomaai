@@ -49,7 +49,7 @@ COPY config.json /root/.config/loomaai/config.json
 # laiapp port
 EXPOSE 4700
 
-WORKDIR /app/appai
+WORKDIR /app
 
 CMD [ "/app/bootup.sh" ]
 

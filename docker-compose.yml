@@ -1,19 +1,14 @@
 #version: '3.9'
 
 networks:
-  loomafront:
-    name: loomafront
-    external: false
-    driver: bridge
-    driver_opts:
-      com.docker.network.bridge.name: loomafront
-  loomaainet:
+  loomanet:
+    external: true
 
 services:
-  loomaai:
+  looma-streamlit:
     # image: ghcr.io/looma/loomadb:latest
     image: loomaai:latest
-    container_name: loomaai
+    container_name: looma-streamlit
     ports:
       - 47000:4700
     volumes:
@@ -22,17 +17,15 @@ services:
     restart: always
     tty: true
     networks:
-      - loomaainet
-      - loomafront
+      - loomanet
 
-  qdrant:
+  looma-qdrant:
     # image: ghcr.io/looma/loomadb:latest
     image: qdrant/qdrant:latest
-    container_name: qdrant
+    container_name: looma-qdrant
     ports:
       - 46333:6333
     restart: always
     tty: true
     networks:
-      - loomaainet
-      - loomafront
+      - loomanet
