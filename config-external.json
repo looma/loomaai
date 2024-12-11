@@ -1,0 +1,15 @@
+{
+  "name": "loomaai",
+  "openai_api_key" : "sk-",
+  "datadir": "/app/data/files",
+  "qdrant": {
+    "host": "localhost",
+    "port": 46333,
+    "index": "loomaai"
+  },
+  "mongo": {
+    "host": "localhost",
+    "port": 47017,
+    "database": "looma"
+  }
+}
