@@ -5,7 +5,7 @@ LAIC_VERSION=latest
 LAIC_CTR=loomaai
 
 LOOMA_HOME=$(shell pwd)
-DATAVOL=$(LOOMA_HOME)/data/files
+DATAVOL=$(LOOMA_HOME)/.data
 SRCDIR=$(LOOMA_HOME)
 
 all: $(LAIC_IMAGE)
