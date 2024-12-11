@@ -63,10 +63,15 @@ def SettingsUI(cfg):
     config["qdrant"]["port"] = st.number_input("Qdrant Port", value=config["qdrant"]["port"], step=1)
     config["qdrant"]["index"] = st.text_input("Qdrant Index", value=config["qdrant"]["index"])
 
-    st.link_button(
-            url=f'http://{config["qdrant"]["host"]}:{config["qdrant"]["port"]}/dashboard',
-            label='Qdrant Dashboard'
-    )
+    dashboard = st.checkbox ("Qdrant Dashboard")
+    if dashboard:
+        dashboard_ctr = st.container()
+        dashboard_ctr.text("Qdrant Dashboard")
+        url = dashboard_ctr.text_input("URL", value=f'http://{config["qdrant"]["host"]}:{config["qdrant"]["port"]}/dashboard')
+        st.link_button(
+                url=url,
+                label='Qdrant Dashboard'
+        )
     collection_mgmt = st.checkbox("Manage Collections")
     if collection_mgmt:
         CollectionsUI(cfg)
