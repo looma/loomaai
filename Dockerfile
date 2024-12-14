@@ -29,7 +29,7 @@ COPY setup.sh /app/setup.sh
 
 # loomaai specific configuration 
 RUN mkdir -p /root/.config/loomaai/
-COPY config-external.json /root/.config/loomaai/config.json
+COPY config.json /root/.config/loomaai/config.json
 
 # laiapp port
 EXPOSE 4700
