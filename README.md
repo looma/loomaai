@@ -30,6 +30,9 @@ Run docker.app to start up the docker daemon
 
 #### 5. Run Containers
 
+### IMPORTANT: Run the looma-II docker-compose first
+* So that the shared network loomanet is created 
+
 This will run a docker-compose to set up Streamlit and Qdrant. 	Streamlit is a web interface for testing Looma AI features. 	Qdrant is a vector database for storing and querying embeddings.
 
 ```bash

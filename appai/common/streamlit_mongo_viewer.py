@@ -1,5 +1,4 @@
 import uuid
-
 import pandas as pd
 import streamlit as st
 from pymongo import MongoClient
@@ -37,7 +36,11 @@ def mongodb_viewer(client_uri, database_name, collection_name, filters=None, col
     data = pd.DataFrame([{k: v for k, v in doc.items() if k in columns} for doc in documents])
     data['_id'] = data['_id'].astype(str)
 
-    data["Select"] = False
+    # Add a "Select All" checkbox in the header
+    select_all = st.checkbox("Select All", key="select_all")
+
+    # Initialize "Select" column with the value of the "Select All" checkbox
+    data["Select"] = select_all
 
     search_query = st.text_input("Search", placeholder="Type to filter results...", key=str(uuid.uuid4()))
 
