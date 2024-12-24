@@ -1,5 +1,6 @@
 import argparse
 
+from config import ConfigInit
 from ..common.split import *
 from pymongo import MongoClient
 
@@ -17,5 +18,5 @@ config = cfg.json()
 MONGO_URI = f"mongodb://{config['mongo']['host']}:{config['mongo']['port']}"
 client = MongoClient(MONGO_URI)
 
-split(client=client, files_dir=args.datadir, textbooks = args.textbook)
+split(client=client, files_dir=args.datadir, prefixes=[args.textbook])
 print("all textbook chapters have their own pdfs")
