@@ -36,14 +36,19 @@ def mongodb_viewer(client_uri, database_name, collection_name, filters=None, col
     data = pd.DataFrame([{k: v for k, v in doc.items() if k in columns} for doc in documents])
     data['_id'] = data['_id'].astype(str)
 
-    # Add a "Select All" checkbox in the header
-    select_all = st.checkbox("Select All", key="select_all")
+    # Add a "Select" column with default values set to False
+    data["Select"] = False
 
-    # Initialize "Select" column with the value of the "Select All" checkbox
-    data["Select"] = select_all
+    # Create a layout with two columns: Search bar and Select All checkbox
+    col1, col2 = st.columns([3, 1])  # Adjust the proportions as needed
 
-    search_query = st.text_input("Search", placeholder="Type to filter results...", key=str(uuid.uuid4()))
+    with col1:
+        search_query = st.text_input("Search", placeholder="Type to filter results...", key=str(uuid.uuid4()))
 
+    with col2:
+        select_all = st.checkbox("Select All", key="select_all_checkbox")
+
+    # Filter the data based on the search query
     if search_query:
         filtered_data = data[data.apply(
             lambda row: search_query.lower() in row.astype(str).str.lower().to_string(), axis=1
@@ -51,11 +56,17 @@ def mongodb_viewer(client_uri, database_name, collection_name, filters=None, col
     else:
         filtered_data = data
 
+    # Apply "Select All" functionality
+    if select_all:
+        filtered_data["Select"] = True
+
+    # Use st.data_editor with editable=False for all columns except "Select"
     edited_data = st.data_editor(
         filtered_data,
         column_config={
             "Select": st.column_config.CheckboxColumn("Select Rows"),
         },
+        disabled=list(filtered_data.columns.difference(["Select"])),  # Make all columns except "Select" non-editable
         use_container_width=True,
         hide_index=True,
         num_rows="fixed",
@@ -67,3 +78,17 @@ def mongodb_viewer(client_uri, database_name, collection_name, filters=None, col
     ).tolist()
 
     return selected_documents
+
+
+# Example Usage
+if __name__ == "__main__":
+    st.title("MongoDB Viewer")
+    client_uri = "your_mongo_uri"
+    database_name = "your_database"
+    collection_name = "your_collection"
+
+    selected_docs = mongodb_viewer(client_uri, database_name, collection_name)
+
+    if selected_docs:
+        st.write("Selected Documents:")
+        st.json(selected_docs)
