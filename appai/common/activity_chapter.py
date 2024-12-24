@@ -3,7 +3,7 @@ import re
 from langchain_huggingface import HuggingFaceEmbeddings
 from pymongo.synchronous.database import Database
 
-from ..common.activity import Activity, download_pdf, extract_text_from_pdf
+from .activity import Activity, download_pdf, extract_text_from_pdf
 
 
 class ChapterActivity(Activity):

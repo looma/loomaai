@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 from langchain_huggingface import HuggingFaceEmbeddings
 from pymongo.synchronous.database import Database
 
-from ..common.activity import Activity
+from .activity import Activity
 
 
 class HtmlActivity(Activity):

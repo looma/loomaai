@@ -4,10 +4,10 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from qdrant_client import QdrantClient
 from qdrant_client import models
 
-from ..common.activity import Activity
-from ..common.activity_pdf import PdfActivity
-from ..common.activity_html import HtmlActivity
-from ..common.activity_chapter import ChapterActivity
+from .activity import Activity
+from .activity_pdf import PdfActivity
+from .activity_html import HtmlActivity
+from .activity_chapter import ChapterActivity
 
 from alive_progress import alive_bar
 from concurrent.futures import ThreadPoolExecutor, as_completed
