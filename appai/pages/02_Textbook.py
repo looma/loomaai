@@ -5,10 +5,12 @@ from qdrant_client import QdrantClient, models
 from common.streamlit_mongo_viewer import mongodb_viewer
 from common.embed import objectid_to_uuid
 
+
 def remove_textbook(mongo, qdrant, textbooks):
     for textbook_prefix in textbooks:
         # get list of chapters with this prefix
-        chapter_activities = list(mongo['activities'].find({'ft': "chapter", 'ID': re.compile(fr"^{textbook_prefix}\d", re.IGNORECASE)}))
+        chapter_activities = list(
+            mongo['activities'].find({'ft': "chapter", 'ID': re.compile(fr"^{textbook_prefix}\d", re.IGNORECASE)}))
         # remove chapter from qdrant
         qdrant.delete(
             collection_name="activities",
@@ -29,13 +31,16 @@ def remove_textbook(mongo, qdrant, textbooks):
             mongo['chapters'].delete_one({'_id': chapter_id})
         mongo['textbooks'].delete_one({'prefix': textbook_prefix})
 
+        #         	- we should go through the "lessons" collection and tag lessons that refer to removed chapters
+        # 	- we should go through the dictionary and remove "first-chapter-used" fields that refer to removed chapters
+        # when we find a lesson with a reference to an old chapter, we dont remove the reference right away. instead, we make a list of such lessons for our lesson-making teams to revise.
 
 
 def TextbookUI(cfg):
     config = cfg.json()
     st.title('Textbook')
 
-    MONGO_URI=f'mongodb://{config["mongo"]["host"]}:{config["mongo"]["port"]}'
+    MONGO_URI = f'mongodb://{config["mongo"]["host"]}:{config["mongo"]["port"]}'
     DATABASE_NAME = f'{config["mongo"]["database"]}'
     FILTERS = {}
     selected = mongodb_viewer(
@@ -51,13 +56,14 @@ def TextbookUI(cfg):
     split_text, remove, dict, embed = st.tabs(['Split Textbook', 'Remove Textbook', 'Dictionary', 'Embed'])
 
     with split_text:
-        st.info("This will create separate PDFs for every chapter in the selected textbooks. The location of the created PDFs will be displayed here.")
+        st.info(
+            "This will create separate PDFs for every chapter in the selected textbooks. The location of the created PDFs will be displayed here.")
         if st.button("Split Into Chapters"):
             try:
                 with st.spinner("Splitting..."):
-                    #gets the directory that the chapters have to go to
+                    # gets the directory that the chapters have to go to
                     datadir = config["datadir"]
-                    #calls the MongoClient and runs the split function in loomaai/appai/common/split.py
+                    # calls the MongoClient and runs the split function in loomaai/appai/common/split.py
                     client = MongoClient(MONGO_URI)
                     split(client, datadir, textbooks)
                 st.success(f"Split {len(textbooks)} textbooks and saved split PDFs to {datadir}")
@@ -65,7 +71,8 @@ def TextbookUI(cfg):
                 st.error(f"Error splitting textbooks {exception}")
 
     with remove:
-        st.warning("For each selected textbook, this will PERMANENTLY remove from MongoDB and Qdrant: the textbook, all its chapters, and any relationships to activities")
+        st.warning(
+            "For each selected textbook, this will PERMANENTLY remove from MongoDB and Qdrant: the textbook, all its chapters, and any relationships to activities")
         if st.button("Remove Permanently"):
             try:
                 with st.spinner("Removing..."):
@@ -81,8 +88,6 @@ def TextbookUI(cfg):
 
     with embed:
         st.write('hi')
-
-
 
 
 if __name__ == '__main__':

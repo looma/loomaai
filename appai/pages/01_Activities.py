@@ -40,10 +40,18 @@ def download_snapshot(snapshot_location):
 
 # Streamlit App
 def main(cfg):
-    st.title("Qdrant Collection Snapshot Exporter")
+    st.title("Activities")
+    st.header("Generate Embeddings")
+    st.markdown("""
+    For performance reasons, it is not supported to generate embeddings from Streamlit (i.e. inside a docker container). On an M1 Pro MacBook Pro (2021), the process takes about 30 minutes total for all resources. To generate embeddings: 
+    * Clone https://github.com/looma/Looma-II and follow the setup instructions in the README
+    * Clone https://github.com/looma/loomaai and follow the setup instructions in the README
+    * From the loomaai root directory, run `python3 -m appai.common.embed`
+    """)
+    st.header("Download Snapshot")
     st.markdown(
         """
-        This tool allows you to create a snapshot of the **activities** collection in Qdrant and download it for backup or restoration purposes.
+        This tool allows you to create a snapshot of the **activities** collection in Qdrant and download it, for example to load onto a looma box.
         """
     )
 
