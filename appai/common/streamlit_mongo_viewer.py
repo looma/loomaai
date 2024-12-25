@@ -1,3 +1,4 @@
+import random
 import uuid
 import pandas as pd
 import streamlit as st
@@ -46,7 +47,7 @@ def mongodb_viewer(client_uri, database_name, collection_name, filters=None, col
         search_query = st.text_input("Search", placeholder="Type to filter results...", key=str(uuid.uuid4()))
 
     with col2:
-        select_all = st.checkbox("Select All", key="select_all_checkbox")
+        select_all = st.checkbox("Select All", key="select_all_checkbox"+collection_name)
 
     # Filter the data based on the search query
     if search_query:
