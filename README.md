@@ -1,20 +1,26 @@
 # Looma AI
 
-## User Guide
+## Setup
 
-### Setup
+1. Clone [Looma-II](https://github.com/looma/Looma-II) and follow the setup instructions in README
+   1. Ensure the Looma-II docker-compose is running
+2. Run `make` - this could take a few minutes 
+3. Run `docker-compose up`
+4. Navigate to [http://localhost:47000/loomaai](http://localhost:47000/loomaai) to access the dashboard
 
-#### 1.create a python virtual encoronment
+## Setup for Developers
+
+#### 1.create a python virtual environment
 
 ```bash
 	cd <path to python project folder>
 	python -m venv .
 	source <venv>/bin/activate`)
 ```
-#### 2. activate your python virtual environment  
+#### 2. activate your python virtual environment
 
->[for details:   https://docs.python.org/3/library/env.html]  
-	
+>[for details:   https://docs.python.org/3/library/env.html] 
+
 ```bash
 	source ./bin/activate
 ```
@@ -23,33 +29,15 @@
 ```bash
 	pip3 install -r requirements.txt
 ```
-
-#### 4.launch docker daemon
-
-Run docker.app to start up the docker daemon
-
-#### 5. Run Containers
-
-### IMPORTANT: Run the looma-II docker-compose first
-* So that the shared network loomanet is created 
-
-This will run a docker-compose to set up Streamlit and Qdrant. 	Streamlit is a web interface for testing Looma AI features. 	Qdrant is a vector database for storing and querying embeddings.
-
-```bash
-	make
-	docker-compose up
-```
-To access Streamlit in browser: 
->http://localhost:47000/loomaai 
-	
-To access Qdrant web UI: 
+To access Qdrant web UI:
 >http://localhost:46333/dashboard
+
 
 ### To run Looma AI applications
 
 #### Embed All Activities
 
-This requires  docker-compose to be running (see "Run Containers")
+This requires  docker-compose to be running (see "Setup")
 
 ```bash
 python3 -m appai.cli.embed 
@@ -72,16 +60,11 @@ python3 -m appai.cli.populate_mongo
 
 #### Chapter Splitting
 
-* In CLI
-  * Make sure you are in the root directory.  
-  * Use the follow command in the terminal: 
-    `python3 -m appai.cli.split data/files/chapters` followed by the prefix of what textbook to split, such as 5M, or 'all' for splitting all the textbooks into chapters.
-  * Example use: `python3 -m appai.cli.split data/files/chapters 5M`
 * In Streamlit
   * Create the `data/files/chapters` folder in the loomaai repo if it is not already there.
-  * In the textbox of the streamlit app, type in the prefix of what textbook to split, such as 5M, or 'all' for splitting all textbooks into chapters. 
-  * Click the "Split Chapters" button.
-The chapters should be in the `data/files/chapters` folder in the loomaai repo.
+  * In Streamlit, click `Textbook` in the sidebar and select the textbooks you want.
+  * Click the "Split Into Chapters" button. 
+  * A file location will be shown on-screen. That location is synced, so the chapters will also be in `data/files/chapters` within this folder.
 
 #### Chapter Summaries
 
@@ -94,8 +77,15 @@ The chapters should be in the `data/files/chapters` folder in the loomaai repo.
   * Selected the chapter to be summarized from your file explorer.
   * Make sure the language selected in the options is the language the chapter is in.
   * Click the Summarize button.
-  
-## Developers
+
+
+
+When importing a common library from CLI: `from ..common.generate import generate_vectors`
+* To run a script in CLI, run it like this from the root directory: `python3 -m appai.cli.generate`
+  * The -m flag is important, do not use the filename
+* When importing a common library from pages: `from common.query_faiss import query`
+
+## More Developer Notes
 
 ### To install and run the LoomaAI container (in Terminal):
 
@@ -104,9 +94,9 @@ The chapters should be in the `data/files/chapters` folder in the loomaai repo.
 % git pull
 % git branch -a
 ```
-The defailt branch is `main` but we can pick other branches used during development. 
+The defailt branch is `main` but we can pick other branches used during development.
 Now let's pick a branch in the list and checkout the branch. In the example below we are
-using a branch called `na_ctr`. 
+using a branch called `na_ctr`.
 
 ```bash
 % git checkout na_ctr
@@ -136,12 +126,7 @@ Point the browser to [http://localhost:4700](http://localhost:4700)
 ```
 Now you are in the terminal in the container
 
-If you'd like to see the logs of the running container 
+If you'd like to see the logs of the running container
 ```bash
 % make logs
 ```
-
-When importing a common library from CLI: `from ..common.generate import generate_vectors`
-* To run a script in CLI, run it like this from the root directory: `python3 -m appai.cli.generate`
-  * The -m flag is important, do not use the filename
-* When importing a common library from pages: `from common.query_faiss import query`
