@@ -1,19 +1,22 @@
+import io
+
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 import fitz
-import streamlit as st
-
+import requests
 
 class Summary:
-    def __init__(self, cfg, pdf_path):
-        self.filename = pdf_path
+    def __init__(self, cfg, url):
+        self.filename = url
         openai_api_key = cfg.getv("openai_api_key")
         self.llm = ChatOpenAI(temperature=0, model_name="gpt-4o-mini", api_key=openai_api_key)
 
 #extracts the text from the chapter pdf
     def extract_text(self):
-        pdf = fitz.open(self.filename)
+        request = requests.get(self.filename)
+        filestream = io.BytesIO(request.content)
+        pdf = fitz.open(stream=filestream, filetype="pdf")
         text_content = ''
 
         for page in pdf:

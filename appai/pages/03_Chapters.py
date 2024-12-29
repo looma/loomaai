@@ -1,7 +1,13 @@
+import os
+import re
 import tempfile
+import streamlit as st
+
+from common.activity_chapter import chapter_url_from_id
 from common.summary import *
 from common.config import ConfigInit
 from common.streamlit_mongo_viewer import mongodb_viewer
+from pymongo import MongoClient
 # Defining the filepath for uploading the file that needs to be summarized
 def filePath(file):
     if file is not None:
@@ -29,6 +35,7 @@ def ChaptersUI(cfg):
     st.title("Chapters")
     MONGO_URI = f"mongodb://{config['mongo']['host']}:{config['mongo']['port']}"
     DATABASE_NAME = f"{config['mongo']['database']}"
+    selected_chapters = []
 
     with st.expander("Select Textbooks", expanded=True):
         selected_textbooks = mongodb_viewer(
@@ -51,28 +58,73 @@ def ChaptersUI(cfg):
                 },
                 columns=["_id", "dn"]
             )
-            st.json(selected_chapters)
+
+    client = MongoClient(MONGO_URI)
+    db = client['looma']
 
     # TODO: get the file names for the selected chapters
 
-    summary1, supersummary1, translate1, topic1, quiz1 = st.tabs(["Summary", "Detailed Summary", "Translate", "Topic", "Quiz"])
+    summary1, quiz1, translate1, topic1 = st.tabs(["Summary", "Quiz", "Translate", "Topic"])
+    with summary1:
+
+        # For the summary loading visualization
+        if "summary_generated" not in st.session_state:
+            st.session_state["summary_generated"] = False
+
+        if len(selected_chapters) > 0:
+            if st.button("Summarize Selection", key="summarize_button"):
+                summaries = []
+                with st.spinner("Summarizing..."):
+                    for chapter in selected_chapters:
+                        file_path, textbook = chapter_url_from_id(chapter["_id"], textbook=None, mongo=db)
+
+                        summarizer = Summary(cfg, file_path)
+                        summary = summarizer.summarize_pdf()
+
+                        files_dir = config["datadir"]
+                        save_loc = f'{files_dir}/{textbook["fp"]}{'en'}'
+                        os.makedirs(save_loc, exist_ok=True)
+                        save_name = f"{chapter['_id']}.summary"
+                        save_info = os.path.join(save_loc, save_name)
+                        with open(save_info, "w") as file:
+                            file.write(summary)
+
+                        summaries.append(summary)
+
+                    # Display summaries for each PDF
+                    for i, summary in enumerate(summaries):
+                        st.write(f"### Summary of File {i+1}")
+                        st.info(summary)
+
+
+                # Store the summaries in session state
+                st.session_state["content"] = summaries
+                st.session_state["summary_generated"] = True
 
     with quiz1:
-        file_paths = fileUpload("04_1")
 
         # For the quiz loading visualization
         if "quizzes_generated" not in st.session_state:
             st.session_state["quizzes_generated"] = False
 
-        if file_paths:
-            if st.button("Quizzes for all PDFs"):
+        if len(selected_chapters) > 0:
+            if st.button("Generate Quizzes for Selection"):
                 quizzes = []
                 with st.spinner("Generating..."):
-                    for file_path in file_paths:
+                    for chapter in selected_chapters:
+                        file_path, textbook = chapter_url_from_id(chapter["_id"], textbook=None, mongo=db)
                         quizzer = Summary(cfg, file_path)
                         
                         # Generate the summary
                         quiz = quizzer.quiz_pdf()
+                        files_dir = config["datadir"]
+                        save_loc = f'{files_dir}/{textbook["fp"]}{'en'}'
+                        os.makedirs(save_loc, exist_ok=True)
+                        save_name = f"{chapter['_id']}.quiz"
+                        save_info = os.path.join(save_loc, save_name)
+                        # Open the file in write mode and write the content
+                        with open(save_info, "w") as file:
+                            file.write(quiz)
                         quizzes.append(quiz)
                 
                 # Display summaries for each PDF
@@ -83,32 +135,32 @@ def ChaptersUI(cfg):
                 # Store the summaries in session state
                 st.session_state["content"] = quizzes
                 st.session_state["quizzes_generated"] = True
-    with supersummary1:
-        file_paths = fileUpload("04_2")
-
-        # For the summary loading visualization
-        if "summary_generated" not in st.session_state:
-            st.session_state["summary_generated"] = False
-
-        if file_paths:
-            if st.button("Summarize All PDFs", key="supersummaries_button"):
-                summaries = []
-                with st.spinner("Summarizing..."):
-                    for file_path in file_paths:
-                        summarizer = Summary(cfg, file_path)
-
-                        # Generate the summary
-                        summary = summarizer.detailSummary_pdf()
-                        summaries.append(summary)
-                
-                # Display summaries for each PDF
-                for i, summary in enumerate(summaries):
-                    st.write(f"### Summary of File {i+1}")
-                    st.info(summary)
-
-                # Store the summaries in session state
-                st.session_state["content"] = summaries
-                st.session_state["summary_generated"] = True
+    # with supersummary1:
+    #     file_paths = fileUpload("04_2")
+    #
+    #     # For the summary loading visualization
+    #     if "summary_generated" not in st.session_state:
+    #         st.session_state["summary_generated"] = False
+    #
+    #     if file_paths:
+    #         if st.button("Summarize All PDFs", key="supersummaries_button"):
+    #             summaries = []
+    #             with st.spinner("Summarizing..."):
+    #                 for file_path in file_paths:
+    #                     summarizer = Summary(cfg, file_path)
+    #
+    #                     # Generate the summary
+    #                     summary = summarizer.detailSummary_pdf()
+    #                     summaries.append(summary)
+    #
+    #             # Display summaries for each PDF
+    #             for i, summary in enumerate(summaries):
+    #                 st.write(f"### Summary of File {i+1}")
+    #                 st.info(summary)
+    #
+    #             # Store the summaries in session state
+    #             st.session_state["content"] = summaries
+    #             st.session_state["summary_generated"] = True
                 
     with translate1:
         file_paths = fileUpload("04_3")
@@ -136,7 +188,6 @@ def ChaptersUI(cfg):
                 # Store the summaries in session state
                 st.session_state["content"] = translations
                 st.session_state["quizzes_generated"] = True
-                
     with topic1:
         file_paths = fileUpload("04_4")
 
@@ -164,33 +215,7 @@ def ChaptersUI(cfg):
                 st.session_state["content"] = topics
                 st.session_state["summary_generated"] = True
                 
-    with summary1:
-        file_paths = fileUpload("04_5")
 
-        # For the summary loading visualization
-        if "summary_generated" not in st.session_state:
-            st.session_state["summary_generated"] = False
-
-        if file_paths:
-            if st.button("Summarize All PDFs", key="summarize_button"):
-                summaries = []
-                with st.spinner("Summarizing..."):
-                    for file_path in file_paths:
-                        summarizer = Summary(cfg, file_path)
-                        
-                        # Generate the summary
-                        summary = summarizer.summarize_pdf()
-                        summaries.append(summary)
-                    # Display summaries for each PDF
-                    for i, summary in enumerate(summaries):
-                        st.write(f"### Summary of File {i+1}")
-                        st.info(summary)
-                
-
-                # Store the summaries in session state
-                st.session_state["content"] = summaries
-                st.session_state["summary_generated"] = True
-                
 if __name__ == '__main__':
     try:
         cfg = ConfigInit()
