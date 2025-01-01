@@ -53,7 +53,7 @@ def TextbookUI(cfg):
 
     textbooks = [t['prefix'] for t in selected]
 
-    split_text, remove, dict, embed = st.tabs(['Split Textbook', 'Remove Textbook', 'Dictionary', 'Embed'])
+    split_text, remove = st.tabs(['Split Textbook', 'Remove Textbook'])
 
     with split_text:
         st.info(
@@ -82,12 +82,12 @@ def TextbookUI(cfg):
                 st.success(f"Removed {textbooks} textbooks from Qdrant")
             except Exception as exception:
                 st.error(f"Error removing textbooks {exception}")
-
-    with dict:
-        st.write('hi')
-
-    with embed:
-        st.write('hi')
+    #
+    # with dict:
+    #     st.write('hi')
+    #
+    # with embed:
+    #     st.write('hi')
 
 
 if __name__ == '__main__':
