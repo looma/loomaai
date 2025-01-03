@@ -19,7 +19,7 @@
 ```bash
 	cd <path to python project folder>
 	python -m venv .
-	source <venv>/bin/activate`)
+	source <venv>/bin/activate
 ```
 #### 2. activate your python virtual environment
 
