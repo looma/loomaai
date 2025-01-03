@@ -2,7 +2,7 @@
 
 ## Setup
 
-1. Clone [Looma-II](https://github.com/looma/Looma-II) and follow the setup instructions in README
+1. The Docker containers "loomaweb" and "loomadb" must be running when using "loomaai". Clone [Looma-II](https://github.com/looma/Looma-II) and follow the setup instructions in README for Looma-II repository
    1. Ensure the Looma-II docker-compose is running
 2. (If you plan to use ChatGPT-enabled features) Obtain an OpenAI API key and add it to both `config.json` and `config-external.json` in the root directory
    1. `"openai_api_key" : "sk-<your key>"`
