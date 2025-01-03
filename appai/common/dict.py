@@ -18,20 +18,23 @@ class Dictionary:
     def has_numbers(self, inputString):
         return any(char.isdigit() for char in inputString)
     def get_ch_data(self, ch, field):
-        search = re.search(r"([1-9]|10|11|12)(EN|S|SF|M|SS|N|H|V|CS)[0-9]{2}(\.[0-9]{2})?", ch, re.IGNORECASE)
+        search = re.search(r"([1-9]|10|11|12)(EN|S|SF|M|SS|N|H|V|CS)([0-9]{2})(\.[0-9]{2})?", ch, re.IGNORECASE)
         if field == "grade":
             grade = search[1]
             return int(grade)
         elif field == "subject":
             subject = search[2]
-            return subject 
+            return subject
+        elif field == "number":
+            number = search[3]
+            return number 
     def has_section(self, ch):
-        search = re.search(r"([1-9]|10|11|12)(EN|S|SF|M|SS|N|H|V|CS)[0-9]{2}(\.[0-9]{2})?", ch, re.IGNORECASE)
+        search = re.search(r"([1-9]|10|11|12)(EN|S|SF|M|SS|N|H|V|CS)([0-9]{2})(\.[0-9]{2})?", ch, re.IGNORECASE)
         try:
-            section = search[3]
+            section = search[4]
             return section
         except:
-            return False       
+            return False     
     def define_word(self, text):
         prompt = PromptTemplate(
             input_variables=["text"],
@@ -79,8 +82,8 @@ class Dictionary:
 
             grade_new = self.get_ch_data(new_chapter, "grade")
             sub_new = self.get_ch_data(new_chapter, "subject")
-            if self.has_section(new_chapter) != False:
-                sect_new = self.has_section(new_chapter)
+            number_new = self.get_ch_data(new_chapter, "number")
+            sect_new = self.has_section(new_chapter)
                 
             db = client.get_database("looma")
             collection = db.get_collection("dictionary")
@@ -133,10 +136,10 @@ class Dictionary:
                         collection.update_one(query, new)
                     if status == "changed":
                         grade_ori = self.get_ch_data(ch_ori, "grade")
-                        if self.has_section(ch_ori) != False:
-                            sect_old = self.has_section(ch_ori)
-                        if (check not in entry['ch_id'] and grade_new < grade_ori) or (check not in entry['ch_id'] and grade_new == grade_ori):
-                            # TODO: add this back to the condition but handling None case: ((sect_old == None and sect_new != None) or sect_new < sect_old))
+                        number_ori = self.get_ch_data(ch_ori, "number")
+                        sect_ori = self.has_section(ch_ori)
+                        if (check not in entry['ch_id'] and grade_new < grade_ori) or (check not in entry['ch_id'] and grade_new == grade_ori and number_new < number_ori) or (check not in entry['ch_id'] and grade_new == grade_ori and number_ori == number_new and ((sect_ori == False and sect_new != False) or sect_new < sect_ori)):
+                            # TODO: add this back to the condition but handling None case: ((sect_ori == None and sect_new != None) or sect_new < sect_ori))
                             place = f'ch_id.{index}.{sub_new}'
                             new = {"$set": {place: new_chapter}}    
                             collection.update_one(query, new)
