@@ -1,14 +1,14 @@
 from .summary import *
-from .config import *
+# from .config import *
 
 from pymongo import MongoClient
-from langdetect import detect
+# from langdetect import detect
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 
 import string
 import nltk
-import ssl
+# import ssl
 import re
 
 class Dictionary:
@@ -63,19 +63,19 @@ class Dictionary:
         
     def dict_update(self, new_chapter: str, chapter_content: str, client: MongoClient):
         try:
-            try:
-                _create_unverified_https_context = ssl._create_unverified_context
-            except AttributeError:
-                pass
-            else:
-                ssl._create_default_https_context = _create_unverified_https_context
+            # try:
+            #     _create_unverified_https_context = ssl._create_unverified_context
+            # except AttributeError:
+            #     pass
+            # else:
+            #     ssl._create_default_https_context = _create_unverified_https_context
             nltk.download('stopwords')
             nltk.download('punkt_tab')
             stop_words = set(stopwords.words('english'))
             
-            chapter_language = detect(chapter_content)
-            if chapter_language == "ne":
-                chapter_content = self.translate_word(chapter_content, "ne") 
+            # chapter_language = detect(chapter_content)
+            # if chapter_language == "ne":
+            #     chapter_content = self.translate_word(chapter_content, "ne")
 
             grade_new = self.get_ch_data(new_chapter, "grade")
             sub_new = self.get_ch_data(new_chapter, "subject")
@@ -135,7 +135,8 @@ class Dictionary:
                         grade_ori = self.get_ch_data(ch_ori, "grade")
                         if self.has_section(ch_ori) != False:
                             sect_old = self.has_section(ch_ori)
-                        if (check not in entry['ch_id'] and grade_new < grade_ori) or (check not in entry['ch_id'] and grade_new == grade_ori and ((sect_old == None and sect_new != None) or sect_new < sect_old)):
+                        if (check not in entry['ch_id'] and grade_new < grade_ori) or (check not in entry['ch_id'] and grade_new == grade_ori):
+                            # TODO: add this back to the condition but handling None case: ((sect_old == None and sect_new != None) or sect_new < sect_old))
                             place = f'ch_id.{index}.{sub_new}'
                             new = {"$set": {place: new_chapter}}    
                             collection.update_one(query, new)

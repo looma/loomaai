@@ -11,6 +11,8 @@ from common.streamlit_mongo_viewer import mongodb_viewer
 from pymongo import MongoClient
 from qdrant_client import QdrantClient
 
+from common.dict import Dictionary
+
 
 # Defining the filepath for uploading the file that needs to be summarized
 def filePath(file):
@@ -57,20 +59,22 @@ def ChaptersUI(cfg):
     client = MongoClient(MONGO_URI)
     db = client['looma']
 
-    populate_tab, summary_tab, quiz_tab = st.tabs(
-        ["Populate Relevant Resources", "Summary", "Quiz"])  # TODO: add more prompt types
+    populate_tab, summary_tab, quiz_tab, dictionary_tab = st.tabs(
+        ["Populate Relevant Activities", "Summary", "Quiz", "Dictionary"])  # TODO: add more prompt types
 
     with populate_tab:
         if len(selected_chapters) > 0:
             st.info("Make sure to embed all activities first (sidebar -> Activities)")
             if st.button("Populate Relevant Activities", key="populate_button"):
                 with st.spinner("Populating..."):
-                    mongo_activies = list(db.activities.find({"ID": {"$in": [chapter["_id"] for chapter in selected_chapters]}}))
-                    qd_chapters = qd.retrieve(collection_name="activities", ids=[objectid_to_uuid(str(activity["_id"])) for activity in mongo_activies], with_vectors=True, with_payload=True)
+                    mongo_activies = list(
+                        db.activities.find({"ID": {"$in": [chapter["_id"] for chapter in selected_chapters]}}))
+                    qd_chapters = qd.retrieve(collection_name="activities",
+                                              ids=[objectid_to_uuid(str(activity["_id"])) for activity in
+                                                   mongo_activies], with_vectors=True, with_payload=True)
                     for qd_chapter in qd_chapters:
                         populate_resources_for_chapter(qd, db, qd_chapter)
                 st.success("Populated relevant activities in MongoDB for selected chapters")
-
     with summary_tab:
         if len(selected_chapters) > 0:
             if st.button("Summarize Selection", key="summarize_button"):
@@ -116,10 +120,19 @@ def ChaptersUI(cfg):
                         with open(save_info, "w") as file:
                             file.write(quiz)
                         quizzes.append(quiz)
-                # Display summaries for each PDF
                 for i, quiz in enumerate(quizzes):
                     st.write(f"### Quiz of File {i + 1}")
                     st.info(quiz)
+    with dictionary_tab:
+        if len(selected_chapters) > 0:
+            if st.button("Update Dictionary with Selection"):
+                with st.spinner("Updating..."):
+                    for chapter in selected_chapters:
+                        file_path, textbook = chapter_url_from_id(chapter["_id"], textbook=None, mongo=db)
+                        quizzer = Summary(cfg, file_path)
+                        dictionary_maker = Dictionary(cfg)
+                        dictionary_maker.dict_update(chapter["_id"], quizzer.extract_text(), client)
+                st.success("Updated dictionary in MongoDB for selected chapters")
 
 
 if __name__ == '__main__':
