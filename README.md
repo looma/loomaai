@@ -3,13 +3,14 @@
 ## Setup
 
 1. The Docker containers "loomaweb" and "loomadb" must be running when using "loomaai". Clone [Looma-II](https://github.com/looma/Looma-II) and follow the setup instructions in README for Looma-II repository
-   1. Ensure the Looma-II docker-compose is running
-2. (If you plan to use ChatGPT-enabled features) Obtain an OpenAI API key and add it to both `config.json` and `config-external.json` in the root directory
-   1. `"openai_api_key" : "sk-<your key>"`
+2. Ensure the Looma-II docker-compose is running
 3. Clone this repo to your computer [loomaai] (https://github.com/looma/loomaai)
-4. Run `make` (build the streamlit image) - this could take a few minutes 
-5. Run `docker-compose up` - (start qdrant and streamlit containers)
-6. Navigate to [http://localhost:47000/loomaai](http://localhost:47000/loomaai) to access the dashboard
+4. (If you plan to use ChatGPT-enabled features) Obtain an OpenAI API key and add it to both `config.json` and `config-external.json` in the root directory
+   `"openai_api_key" : "sk-<your key>"`
+
+5. Run `make` (build the streamlit image) - this could take a few minutes 
+6. Run `docker-compose up` - (start qdrant and streamlit containers)
+7. Navigate to [http://localhost:47000/loomaai](http://localhost:47000/loomaai) to access the dashboard
 
 ## Setup for Developers
 
