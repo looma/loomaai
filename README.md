@@ -89,7 +89,7 @@ When importing a `common` library from `cli`, use a relative import: `from ..com
 ### To get a terminal session in the container
 ```bash
 % make shell
-% docker exec -ti loomaai /bin/bash
+% docker exec -ti looma-streamlit /bin/bash
 ```
 Now you are in the terminal in the container
 
