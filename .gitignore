@@ -1,0 +1,11 @@
+data/
+.data/
+*.log
+__pycache__/
+textbooks
+venv
+env
+appai/textbooks
+.DS_Store
+config.json
+config-external.json
