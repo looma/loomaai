@@ -1,4 +1,4 @@
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from qdrant_client import QdrantClient
 import qdrant_client.models as models
 

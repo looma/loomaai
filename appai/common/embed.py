@@ -13,7 +13,7 @@ from alive_progress import alive_bar
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pymongo.database import Database
 
-def generate_vectors(mongo_client: MongoClient, vector_db: QdrantClient):
+def generate_vectors(mongo_client: MongoClient, vector_db: QdrantClient, missing_only: bool):
     db = mongo_client.get_database("looma")
     activities_collection = db.get_collection("activities")
 
@@ -42,7 +42,7 @@ def generate_vectors(mongo_client: MongoClient, vector_db: QdrantClient):
                     ac = PdfActivity(activity)
                 if activity["ft"] == "chapter":
                     ac = ChapterActivity(activity)
-                futures[executor.submit(process_activity, ac, hf, vector_db, db)] = ac
+                futures[executor.submit(process_activity, ac, hf, vector_db, db, missing_only)] = ac
 
             # Ensure all futures complete and get the result (if needed)
             for future in as_completed(futures):
@@ -54,7 +54,10 @@ def generate_vectors(mongo_client: MongoClient, vector_db: QdrantClient):
                     print("[Error]", e, "Activity:", activity.activity["_id"])
                 progress_bar()
 
-def process_activity(activity: Activity, hf: HuggingFaceEmbeddings, vector_db: QdrantClient, db: Database):
+def process_activity(activity: Activity, hf: HuggingFaceEmbeddings, vector_db: QdrantClient, db: Database, missing_only: bool):
+    if missing_only and len(vector_db.retrieve("activities", ids=[objectid_to_uuid(str(activity.activity['_id']))])) > 0:
+        print(f"Skipping {activity.activity['_id']}")
+        return
     embeddings = activity.embed(mongo=db, embeddings=hf)
     payload = activity.payload()
     vector_db.upsert("activities", points=[

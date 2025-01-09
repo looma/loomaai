@@ -9,35 +9,26 @@
    `"openai_api_key" : "sk-<your key>"`
 
 5. Run `make` (build the streamlit image) - this could take a few minutes 
-6. Run `docker-compose up` - (start qdrant and streamlit containers)
+6. Run `docker-compose up -d` - (start qdrant and streamlit containers)
 7. Navigate to [http://localhost:47000/loomaai](http://localhost:47000/loomaai) to access the dashboard
 8. Create the `data/files/textbooks` folder within this folder, if it does not already exist
 
 ## Setup for Developers
+**YOU MUST USE PYTHON 3.12, NOT PYTHON 3.13**.
+This is because pytorch does not support python3.13
 
 #### 1.create a python virtual environment
 
 ```bash
-	cd <path to python project folder>
-	python -m venv .
-	source <venv>/bin/activate
+	python3.12 -m venv env
+	source env/bin/activate
 ```
-#### 2. activate your python virtual environment
 
->[for details:   https://docs.python.org/3/library/env.html] 
-
-```bash
-	source ./bin/activate
-```
-#### 3. install required python libraries
+#### 2. install required python libraries
 
 ```bash
 	pip3 install -r requirements.txt
 ```
-To access Qdrant web UI:
->http://localhost:46333/dashboard
-
-
 
 ## User Guide
 

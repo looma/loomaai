@@ -1,23 +1,23 @@
 from pymongo import MongoClient
 from qdrant_client import QdrantClient
 
-from ..common.config import ConfigInit
 from ..common.embed import generate_vectors, create_collection_if_not_exists
-#
-# parser = argparse.ArgumentParser(description="Embedding tool")
-# parser.add_argument("apikey", type=str, help="The OpenAI API key")
-# args = parser.parse_args()
+import argparse
 
-# llm = ChatOpenAI(temperature=0, model_name="gpt-4o", api_key="")
+parser = argparse.ArgumentParser(description="Embed all activities or only missing activities")
+parser.add_argument("--missing-only", action="store_true", help="Only embed activities that are not already embedded in qdrant. Requires the collection \"activities\" to already exist in qdrant")
 
-cfg = ConfigInit()
-config = cfg.json()
+args = parser.parse_args()
 
-MONGO_URI = f"mongodb://{config['mongo']['host']}:{config['mongo']['port']}"
-QDRANT_URI = f"http://{config['qdrant']['host']}:{config['qdrant']['port']}"
-client = MongoClient(MONGO_URI)
-qclient = QdrantClient(url=QDRANT_URI)
+client = MongoClient("localhost:47017")
+qclient = QdrantClient(url="localhost:46333")
 
-qclient.delete_collection("activities")
-create_collection_if_not_exists("activities", qclient)
-generate_vectors(mongo_client=client, vector_db=qclient)
+
+if not args.missing_only:
+    qclient.delete_collection("activities")
+    create_collection_if_not_exists("activities", qclient)
+    print("Deleted and created fresh activities collection in qdrant")
+else:
+    print("Only embedding missing activities")
+
+generate_vectors(mongo_client=client, vector_db=qclient, missing_only=True)
