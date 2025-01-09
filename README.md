@@ -52,11 +52,17 @@ This is because pytorch does not support python3.13
 This requires  docker-compose to be running (see "Setup")
 
 ```bash
-python3 -m appai.cli.embed 
+python3 -m appai.cli.embed
 ```
 * This process will generate embeddings for all activities in the MongoDB `activities` collection and add the vectors to the Qdrant `activities` collection.
 * IMPORTANT: This process will DELETE all existing entries from qdrant and rebuild the entire vector database.
 * The [Looma-II](https://github.com/looma/Looma-II) semantic search feature requires these embeddings to be generated first and the docker-compose to be running
+
+```bash
+python3 -m appai.cli.embed --missing-only
+```
+* The `-missing-only` flag will prevent the program from deleting existing entries. It will check each entry in mongodb and only create embeddings for the ones that are not in qdrant. 
+* You have to run the first version without the flag at least once to initialize the qdrant collection (or create the collection some other way, for example through the qdrant dashboard http://localhost:46333/dashboard. 
 
 
 #### Populate Chapters with Related Resources
