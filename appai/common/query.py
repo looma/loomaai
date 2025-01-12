@@ -12,25 +12,37 @@ def query(q: str, qdrant: QdrantClient):
         model_kwargs=model_kwargs,
         encode_kwargs=encode_kwargs
     )
-    embedded = hf.embed_query(q)
-    results = qdrant.search_batch(
+    embeddings = hf.embed_query(q)
+
+    similar_docs = qdrant.query_points(
         collection_name="activities",
-        requests=[
-            models.SearchRequest(
-                vector=models.NamedVector(
-                    name="text-body",
-                    vector=embedded,
-                ),
-                limit=10,
-            ),
-            models.SearchRequest(
-                vector=models.NamedVector(
-                    name="text-title",
-                    vector=embedded
-                ),
-                limit=10,
+        prefetch=[
+            # models.Prefetch(
+            #     query=embeddings,
+            #     using="text-title",
+            #     limit=12,
+            #     # filter=models.Filter(
+            #     #     must_not=[
+            #     #         models.FieldCondition(key="ft",
+            #     #                               match=models.MatchValue(
+            #     #                                   value="chapter")),
+            #     #     ]
+            #     # )
+            # ),
+            models.Prefetch(
+                query=embeddings,  # <-- dense vector
+                using="text-body",
+                limit=12,
+                # filter=models.Filter(
+                #     must_not=[
+                #         models.FieldCondition(key="ft",
+                #                               match=models.MatchValue(
+                #                                   value="chapter")),
+                #     ]
+                # )
             ),
         ],
+        query=models.FusionQuery(fusion=models.Fusion.RRF),
+        with_payload=True,
     )
-
-    return [*results[0], *results[1]]
+    return similar_docs
