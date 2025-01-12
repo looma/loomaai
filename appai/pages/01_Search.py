@@ -1,57 +1,53 @@
 import streamlit as st
-
-from common.query import query
-from common.config import *
-
-from langchain_huggingface import HuggingFaceEmbeddings
-from pymongo import MongoClient
 from qdrant_client import QdrantClient
-from logzero import logging
 
+from common.config import ConfigInit
+from common.query import query
 
+def search_qdrant(q, qdrant_client):
+    # Perform the search query in Qdrant. Adjust collection_name and other params based on your setup.
+    try:
+        results = query(q, qdrant_client)
+    except Exception as e:
+        results = []
+        if "404" in str(e):
+            st.error("The activities collection does not exist in qdrant. Please click on \"Activities\" in the sidebar for instructions.")
+    return results
 
-def SearchUI(cfg):
+def display_results(results):
+    # Display search results in a human-readable format
+    if results:
+        for result in results.points:
+            st.write(f"Score: {result.score}")
+            st.write(f"ID: {result.id}")
+            st.write(f"Payload: {result.payload}")
+            st.write("---")
+    else:
+        st.write("No results found.")
+
+def QdrantSearchUI(cfg):
     config = cfg.json()
-    MONGO_URI = f"mongodb://{config['mongo']['host']}:{config['mongo']['port']}"
-    client = MongoClient(MONGO_URI)
-    
-    model_name = "sentence-transformers/all-mpnet-base-v2"
-    model_kwargs = {}
-    encode_kwargs = {'normalize_embeddings': False}
-    hf = HuggingFaceEmbeddings(
-        model_name=model_name,
-        model_kwargs=model_kwargs,
-        encode_kwargs=encode_kwargs
-    )
-    
-    qclient = QdrantClient(url=f'http://{config["qdrant"]["host"]}:{config["qdrant"]["port"]}')
-   
-    if 'search_text' not in st.session_state:
-        st.session_state.search_text = ""
-    instr = ""
-    with st.form("search_form"):
-        col1, col2 = st.columns([7,1])
-        with col1:
-            query = st.text_input(
-                        instr,
-                        value=instr,
-                        placeholder="Search",
-                        label_visibility="collapsed"
-            )
+    st.title('Qdrant Search')
 
-            if query != st.session_state.search_text:
-                st.session_state.search_text = query
-    with col2:
-            submitted = st.form_submit_button("Search")
+    # Initialize Qdrant client
+    qdrant_client = QdrantClient(url=f'http://{config["qdrant"]["host"]}:{config["qdrant"]["port"]}')
 
-    if query and submitted:
-        st.write("Searching...", query)
+    # Input: Search query from the user
+    q = st.text_input("Enter your search query:")
 
-if __name__ == "__main__":
+    if q:
+        try:
+            # Perform the query
+            with st.spinner("Searching..."):
+                results = search_qdrant(q, qdrant_client)
+                # Display results
+                display_results(results)
+        except Exception as e:
+            st.error(f"Error while querying Qdrant: {e}")
+
+if __name__ == '__main__':
     try:
         cfg = ConfigInit()
-        SearchUI(cfg)
+        QdrantSearchUI(cfg)
     except Exception as e:
         st.error(str(e))
-        logging.error(str(e))
-        st.stop()
