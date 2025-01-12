@@ -1,46 +1,33 @@
-DOCKER=docker
+# Makefile for managing Looma-II and loomaai
 
-LAIC_IMAGE=loomaai
-LAIC_VERSION=latest
-LAIC_CTR=loomaai
+# Variables
+LOOMA_AI_DIR := .
+COMPOSE_FILE := docker-compose.yml
 
-LOOMA_HOME=$(shell pwd)
-DATAVOL=$(LOOMA_HOME)/.data
-SRCDIR=$(LOOMA_HOME)
+# Targets
+.PHONY: build update run halt status
 
-all: $(LAIC_IMAGE)
+build:
+	@echo "Building loomaai..."
+	@docker build -t loomaai -f Dockerfile .
+	@echo "Build complete."
 
-.PHONY: all
+update:
+	@echo "Updating loomaai..."
+	@git -C $(LOOMA_AI_DIR) pull
+	@echo "Update complete."
 
-$(LAIC_IMAGE):
-	$(DOCKER) build -t $(LAIC_IMAGE) -f Dockerfile .
+run:
+	@echo "Make sure Looma-II docker compose is running first!"
+	@echo "Starting loomaai services..."
+	@docker-compose -f $(LOOMA_AI_DIR)/$(COMPOSE_FILE) up -d
+	@echo "loomaai is running."
 
-run: $(DATAVOL)
-	$(DOCKER) run -tid -p 4700:4700 \
-		-v $(DATAVOL):/app/data/files \
-		-v ./appai:/app/appai --name $(LAIC_CTR) $(LAIC_IMAGE)
-$(DATAVOL):
-	mkdir -p $(DATAVOL)
-	mkdir -p $(DATAVOL)/models
+halt:
+	@echo "Stopping loomaai services..."
+	@docker-compose -f $(LOOMA_AI_DIR)/$(COMPOSE_FILE) down
+	@echo "loomai services stopped."
 
-stop:
-	$(DOCKER) stop $(LAIC_CTR)
-	$(DOCKER) rm $(LAIC_CTR)
-
-shell:
-	$(DOCKER) exec -ti $(LAIC_CTR) /bin/bash
-
-logs:
-	$(DOCKER) logs $(LAIC_CTR) -f
-
-rmi:
-	$(DOCKER) rmi $(LAIC_IMAGE):$(LAIC_VERSION)
-
-clean:
-	rm -rf $(DATAVOL)
-
-# TODO: this needs to chenge for dockerhub
-publish:
-	@docker tag $(LAIC_IMAGE):$(LAIC_VERSION) ghcr.io/looma/$(LAIC_IMAGE):$(LAIC_VERSION)
-	@docker push ghcr.io/looma/$(LAIC_IMAGE):$(LAIC_VERSION)
-
+status:
+	@echo "Checking status of loomaai services..."
+	@docker-compose -f $(LOOMA_AI_DIR)/$(COMPOSE_FILE) ps

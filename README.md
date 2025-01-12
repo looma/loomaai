@@ -9,7 +9,7 @@
    `"openai_api_key" : "sk-<your key>"`
 
 5. Run `make` (build the streamlit image) - this could take a few minutes 
-6. Run `docker-compose up -d` - (start qdrant and streamlit containers)
+6. Run `make run` - (start qdrant and streamlit containers)
 7. Navigate to [http://localhost:47000/loomaai](http://localhost:47000/loomaai) to access the dashboard
 8. Create the `data/files/textbooks` folder within this folder, if it does not already exist
 
