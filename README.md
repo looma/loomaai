@@ -32,20 +32,6 @@ This is because pytorch does not support python3.13
 
 ## User Guide
 
-#### Chapter Splitting
-
-* In Streamlit
-  * In Streamlit, click `Textbook` in the sidebar and select the textbooks you want.
-  * Click the "Split Into Chapters" button. 
-  * A file location will be shown on-screen. That location is synced to the host machine, so the chapters will also be in `data/files/chapters` within this folder.
-
-#### Chapter Summaries
-
-* In Streamlit
-  * Navigate to "Chapter" in the sidebar
-  * Select the chapter to be summarized from your file explorer.
-  * Make sure the language selected in the options is the language the chapter is in.
-  * Click the Summarize button.
 
 #### Embed All Activities
 
@@ -61,9 +47,23 @@ python3 -m appai.cli.embed
 ```bash
 python3 -m appai.cli.embed --missing-only
 ```
-* The `-missing-only` flag will prevent the program from deleting existing entries. It will check each entry in mongodb and only create embeddings for the ones that are not in qdrant. 
-* You have to run the first version without the flag at least once to initialize the qdrant collection (or create the collection some other way, for example through the qdrant dashboard http://localhost:46333/dashboard. 
+* The `-missing-only` flag will prevent the program from deleting existing entries. It will check each entry in mongodb and only create embeddings for the ones that are not in qdrant.
+* You have to run the first version without the flag at least once to initialize the qdrant collection (or create the collection some other way, for example through the qdrant dashboard http://localhost:46333/dashboard .
 
+#### Chapter Splitting
+
+* In Streamlit
+  * In Streamlit, click `Textbook` in the sidebar and select the textbooks you want.
+  * Click the "Split Into Chapters" button. 
+  * A file location will be shown on-screen. That location is synced to the host machine, so the chapters will also be in `data/files/chapters` within this folder.
+
+#### Chapter Summaries
+
+* In Streamlit
+  * Navigate to "Chapter" in the sidebar
+  * Select the chapter to be summarized from your file explorer.
+  * Make sure the language selected in the options is the language the chapter is in.
+  * Click the Summarize button.
 
 #### Populate Chapters with Related Resources
 
