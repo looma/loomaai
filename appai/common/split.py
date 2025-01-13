@@ -15,7 +15,7 @@ def split(client: MongoClient, files_dir: str, prefixes: list[str] | str):
 
 
         # searches the grade and subject of the textbook within the _id field to access the textbook through the prefix field for the textbook data
-        groups = re.search(r"([1-9]|10|11|12)(EN|S|SF|M|SS|N|H|V|CS)",
+        groups = re.search(r"([1-9]|10|11|12)(EN|SF|SS|S|M|N|H|V|CS)",
                            prefix, re.IGNORECASE)
         grade = groups[1]
         subject = groups[2]
