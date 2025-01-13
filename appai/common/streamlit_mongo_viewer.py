@@ -51,17 +51,15 @@ def mongodb_viewer(client_uri: str, database_name: str, collection_name: str, fi
     # Display the table with the 'selected' column
     selected_docs = []
     if not df.empty:
-        st.write("### MongoDB Data Table")
-
         # Add a search bar to filter the DataFrame
-        search_query = st.text_input("Search", "")
+        search_query = st.text_input("Search", "", key=collection_name+"_search")
 
         if search_query:
             # Filter the DataFrame based on the search query (case insensitive)
             df = df[df.apply(lambda row: row.astype(str).str.contains(search_query, case=False).any(), axis=1)]
 
         # Create the checkbox at the top to toggle all selections
-        toggle_all = st.checkbox("Select/Deselect All")
+        toggle_all = st.checkbox("Select/Deselect All", key=collection_name+"_toggle_all")
 
         # Update the 'selected' column based on the toggle checkbox
         df['selected'] = toggle_all
