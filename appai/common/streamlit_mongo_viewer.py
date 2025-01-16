@@ -65,7 +65,7 @@ def mongodb_viewer(client_uri: str, database_name: str, collection_name: str, fi
         df['selected'] = toggle_all
 
         # Show the updated DataFrame with 'selected' column
-        edited_df = st.data_editor(df.drop(columns=['_id']), disabled=columns)  # Drop the '_id' column for display, optional
+        edited_df = st.data_editor(df, disabled=columns)  # Drop the '_id' column for display, optional
 
         # Collect selected documents where 'selected' is True
         selected_docs = edited_df[edited_df['selected']].to_dict(orient='records')
