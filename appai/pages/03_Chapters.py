@@ -29,6 +29,7 @@ def ChaptersUI(cfg):
     st.title("Chapters")
     MONGO_URI = f"mongodb://{config['mongo']['host']}:{config['mongo']['port']}"
     DATABASE_NAME = f"{config['mongo']['database']}"
+    files_dir = config["datadir"]
 
     qd = QdrantClient(url=f"http://{config['qdrant']['host']}:{config['qdrant']['port']}")
 
@@ -81,7 +82,7 @@ def ChaptersUI(cfg):
                 summaries = []
                 with st.spinner("Summarizing..."):
                     for chapter in selected_chapters:
-                        file_path, textbook = chapter_url_from_id(chapter["_id"], textbook=None, mongo=db)
+                        _, file_path, textbook = chapter_url_from_id(chapter["_id"], files_dir=files_dir, textbook=None, mongo=db)
 
                         summarizer = Summary(cfg, file_path)
                         summary = summarizer.summarize_pdf()
@@ -106,12 +107,11 @@ def ChaptersUI(cfg):
                 quizzes = []
                 with st.spinner("Generating..."):
                     for chapter in selected_chapters:
-                        file_path, textbook = chapter_url_from_id(chapter["_id"], textbook=None, mongo=db)
+                        _, file_path, textbook = chapter_url_from_id(chapter["_id"], files_dir=files_dir,  textbook=None, mongo=db)
                         quizzer = Summary(cfg, file_path)
 
                         # Generate the summary
                         quiz = quizzer.quiz_pdf()
-                        files_dir = config["datadir"]
                         save_loc = f'{files_dir}/{textbook["fp"]}{'en'}'
                         os.makedirs(save_loc, exist_ok=True)
                         save_name = f"{chapter['_id']}.quiz"
@@ -128,7 +128,7 @@ def ChaptersUI(cfg):
             if st.button("Update Dictionary with Selection"):
                 with st.spinner("Updating..."):
                     for chapter in selected_chapters:
-                        file_path, textbook = chapter_url_from_id(chapter["_id"], textbook=None, mongo=db)
+                        _, file_path, textbook = chapter_url_from_id(chapter["_id"], files_dir=files_dir,  textbook=None, mongo=db)
                         quizzer = Summary(cfg, file_path)
                         dictionary_maker = Dictionary(cfg)
                         dictionary_maker.dict_update(chapter["_id"], quizzer.extract_text(), client)
