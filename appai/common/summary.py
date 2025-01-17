@@ -1,10 +1,8 @@
-import io
-
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 import fitz
-import requests
+# import requests
 
 class Summary:
     def __init__(self, cfg, url):
@@ -14,15 +12,15 @@ class Summary:
 
 #extracts the text from the chapter pdf
     def extract_text(self):
-        request = requests.get(self.filename)
-        filestream = io.BytesIO(request.content)
-        pdf = fitz.open(stream=filestream, filetype="pdf")
+        # request = requests.get(self.filename)
+        # filestream = io.BytesIO(request.content)
+        pdf = fitz.open(self.filename)
         text_content = ''
 
         for page in pdf:
             text = page.get_text()
             text_content += text
-        return text_content            
+        return text_content
 
 #use the extracted text to send to OpenAI to summarize in ChatGPT
     def summarize_text(self, text):
