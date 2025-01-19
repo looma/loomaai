@@ -1,3 +1,4 @@
+import io
 import re
 
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -15,16 +16,15 @@ def chapter_url_from_id(chapter_id: str, files_dir: str, textbook: dict | None, 
     grade_level = groups[1]  # grade level
     subject = groups[2]
     textbook = textbook if textbook is not None else mongo.textbooks.find_one({"prefix": grade_level + subject})
-    print("tb", textbook['fp'])
     url_en = None
     local_path_en = None
     url_np = None
     local_path_np = None
     if textbook['fn'] != '':
-        url_en = f"https://looma.website/content/textbooks/{textbook['fp']}{textbook['fn']}.pdf"
+        url_en = f"https://looma.website/content/textbooks/{textbook['fp']}{textbook['fn']}"
         local_path_en = f'{files_dir}/{textbook["fp"]}{'en'}/{chapter_id}.pdf'
     if textbook['nfn'] != '':
-        url_np = f"https://looma.website/content/textbooks/{textbook['fp']}{textbook['nfn']}.pdf"
+        url_np = f"https://looma.website/content/textbooks/{textbook['fp']}{textbook['nfn']}"
         local_path_np = f'{files_dir}/{textbook["fp"]}{'np'}/{chapter_id}-np.pdf'
     return url_en, local_path_en, url_np, local_path_np, textbook
 
@@ -33,10 +33,14 @@ class ChapterActivity(Activity):
 
     def embed(self, mongo: Database, embeddings: HuggingFaceEmbeddings) -> list[float]:
         # activity['ID'] is the chapter ID (not the activity objectid)
-        url, _, _, _, _ = chapter_url_from_id(self.activity['ID'], files_dir='', textbook=None, mongo=mongo)
-        pdf_stream = download_pdf(url)
-        text = extract_text_from_pdf(pdf_stream)
-        return embeddings.embed_query(text)
+        _, filename_en, _, filename_np, _ = chapter_url_from_id(self.activity['ID'], files_dir='', textbook=None, mongo=mongo)
+        if filename_en is not None:
+            with open("data/files"+filename_en, "rb") as file:
+                pdf_stream = io.BytesIO(file.read())
+                text = extract_text_from_pdf(pdf_stream)
+                return embeddings.embed_query(text)
+        else:
+            raise Exception("Chapter is not english")
 
     def payload(self) -> dict:
         return {

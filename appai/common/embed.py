@@ -16,7 +16,6 @@ from pymongo.database import Database
 def generate_vectors(mongo_client: MongoClient, vector_db: QdrantClient, missing_only: bool):
     db = mongo_client.get_database("looma")
     activities_collection = db.get_collection("activities")
-
     activities = activities_collection.find({"ft": {"$in": ["chapter", "html", "pdf"]}})
 
     model_name = "sentence-transformers/all-mpnet-base-v2"
