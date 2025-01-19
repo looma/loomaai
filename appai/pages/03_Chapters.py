@@ -69,12 +69,15 @@ def ChaptersUI(cfg):
                 with st.spinner("Populating..."):
                     mongo_activies = list(
                         db.activities.find({"ID": {"$in": [chapter["_id"] for chapter in selected_chapters]}}))
+                    print([objectid_to_uuid(str(activity["_id"])) for activity in
+                           mongo_activies])
                     qd_chapters = qd.retrieve(collection_name="activities",
                                               ids=[objectid_to_uuid(str(activity["_id"])) for activity in
                                                    mongo_activies], with_vectors=True, with_payload=True)
+                    print(qd_chapters)
                     for qd_chapter in qd_chapters:
                         populate_resources_for_chapter(qd, db, qd_chapter)
-                st.success("Populated relevant activities in MongoDB for selected chapters")
+                    st.success("Populated relevant activities in MongoDB for selected chapters")
         with summary_tab:
             if st.button("Summarize Selection", key="summarize_button"):
                 with st.spinner("Summarizing..."):
