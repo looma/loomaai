@@ -75,7 +75,7 @@ def split(client: MongoClient, files_dir: str, prefixes: list[str] | str):
 
                     nsave_loc = f'{files_dir}/{textbook["fp"]}{'np'}'
                     os.makedirs(nsave_loc, exist_ok=True)
-                    nsave_name = f"{chapter['_id']}-nepali.pdf"
+                    nsave_name = f"{chapter['_id']}-np.pdf"
                     nsave_info = os.path.join(nsave_loc, nsave_name)
                     nchapter_pdf.save(nsave_info)
                     print("saved nepali chapter ")
