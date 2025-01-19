@@ -31,3 +31,11 @@ halt:
 status:
 	@echo "Checking status of loomaai services..."
 	@docker-compose -f $(LOOMA_AI_DIR)/$(COMPOSE_FILE) ps
+
+logs:
+	@echo "Showing logs for loomaai services..."
+	@docker-compose -f $(LOOMA_AI_DIR)/$(COMPOSE_FILE) logs -f
+
+shell:
+	@echo "Opening a shell in the loomaai container..."
+	@docker exec -it looma-streamlit /bin/bash
