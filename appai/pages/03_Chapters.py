@@ -139,10 +139,11 @@ def ChaptersUI(cfg):
             if st.button("Update Dictionary with Selection"):
                 with st.spinner("Updating..."):
                     for chapter in selected_chapters:
-                        _, file_path, textbook = chapter_url_from_id(chapter["_id"], files_dir=files_dir,  textbook=None, mongo=db)
-                        quizzer = Summary(cfg, file_path)
+                        _, file_path, _, nepali_fp, textbook = chapter_url_from_id(chapter["_id"], files_dir=files_dir,  textbook=None, mongo=db)
+                        quizzer = Summary(cfg, file_path, nepali_fp, "")
                         dictionary_maker = Dictionary(cfg)
-                        dictionary_maker.dict_update(chapter["_id"], quizzer.extract_text(), client)
+                        # print(quizzer.extract_text()[0])
+                        dictionary_maker.dict_update(chapter["_id"], quizzer.extract_text()[0], client)
                 st.success("Updated dictionary in MongoDB for selected chapters")
 
 
