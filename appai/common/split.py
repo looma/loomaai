@@ -26,7 +26,7 @@ def split(client: MongoClient, files_dir: str, prefixes: list[str] | str):
             print(f"Textbook not found: {grade + subject}")
             continue
 
-        fn = textbook['fn']
+        fn = textbook.get('fn', '')
         textbook_pdf = None
         if fn != '':
             url = "https://looma.website/content/" + textbook["fp"] + fn
@@ -36,7 +36,7 @@ def split(client: MongoClient, files_dir: str, prefixes: list[str] | str):
             textbook_pdf = fitz.open(stream=pdf)
             print(f"have textbook {url}")
 
-        nfn = textbook['nfn']
+        nfn = textbook.get('nfn', '')
         ntextbook_pdf = None
         if nfn != '':
             url2 = "https://looma.website/content/" + textbook["fp"] + textbook['nfn']
