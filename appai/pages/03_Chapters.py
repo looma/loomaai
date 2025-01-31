@@ -61,8 +61,8 @@ def ChaptersUI(cfg):
     db = client['looma']
 
     if len(selected_chapters) > 0:
-        populate_tab, summary_tab, quiz_tab, dictionary_tab = st.tabs(
-            ["Populate Relevant Activities", "Summary", "Quiz", "Dictionary"])  # TODO: add more prompt types
+        populate_tab, summary_tab, quiz_tab, custom_tab, dictionary_tab = st.tabs(
+            ["Populate Relevant Activities", "Summary", "Quiz", "Custom Prompt", "Dictionary"])  # TODO: add more prompt types
         with populate_tab:
             st.info("Make sure to embed all activities first (sidebar -> Activities)")
             if st.button("Populate Relevant Activities", key="populate_button"):
@@ -108,33 +108,62 @@ def ChaptersUI(cfg):
                         st.info(f"{summary_en} \n \n {summary_np}")
         with quiz_tab:
             if st.button("Generate Quizzes for Selection"):
-                if st.button("Summarize Selection", key="summarize_button"):
-                    with st.spinner("Summarizing..."):
-                        for chapter in selected_chapters:
-                            _, file_path_en, _, file_path_np, textbook = chapter_url_from_id(chapter["_id"], files_dir=files_dir, textbook=None, mongo=db)
+                with st.spinner("Summarizing..."):
+                    for chapter in selected_chapters:
+                        _, file_path_en, _, file_path_np, textbook = chapter_url_from_id(chapter["_id"], files_dir=files_dir, textbook=None, mongo=db)
 
-                            summarizer = Summary(cfg, file_path_en, file_path_np, "Please make a quiz of the following text in the same language it is written in. Make an answer key but make sure answers are not shown at all on the quiz itself. If the text is in Nepali keep it in Nepali and if the text is in English keep it in English \n {text}")
-                            summary_en, summary_np = summarizer.prompt_pdf()
+                        summarizer = Summary(cfg, file_path_en, file_path_np, "Please make a quiz of the following text in the same language it is written in. Make an answer key but make sure answers are not shown at all on the quiz itself. If the text is in Nepali keep it in Nepali and if the text is in English keep it in English \n {text}")
+                        summary_en, summary_np = summarizer.prompt_pdf()
 
-                            if summary_en is not None:
-                                files_dir = config["datadir"]
-                                save_loc = f'{files_dir}/{textbook["fp"]}{'en'}'
-                                os.makedirs(save_loc, exist_ok=True)
-                                save_name = f"{chapter['_id']}.quiz"
-                                save_info = os.path.join(save_loc, save_name)
-                                with open(save_info, "w") as file:
-                                    file.write(summary_en)
+                        if summary_en is not None:
+                            files_dir = config["datadir"]
+                            save_loc = f'{files_dir}/{textbook["fp"]}{'en'}'
+                            os.makedirs(save_loc, exist_ok=True)
+                            save_name = f"{chapter['_id']}.quiz"
+                            save_info = os.path.join(save_loc, save_name)
+                            with open(save_info, "w") as file:
+                                file.write(summary_en)
 
-                            if summary_np is not None:
-                                files_dir = config["datadir"]
-                                save_loc = f'{files_dir}/{textbook["fp"]}{'np'}'
-                                os.makedirs(save_loc, exist_ok=True)
-                                save_name = f"{chapter['_id']}-np.quiz"
-                                save_info = os.path.join(save_loc, save_name)
-                                with open(save_info, "w") as file:
-                                    file.write(summary_np)
+                        if summary_np is not None:
+                            files_dir = config["datadir"]
+                            save_loc = f'{files_dir}/{textbook["fp"]}{'np'}'
+                            os.makedirs(save_loc, exist_ok=True)
+                            save_name = f"{chapter['_id']}-np.quiz"
+                            save_info = os.path.join(save_loc, save_name)
+                            with open(save_info, "w") as file:
+                                file.write(summary_np)
 
-                            st.info(f"{summary_en} \n \n {summary_np}")
+                        st.info(f"{summary_en} \n \n {summary_np}")
+        with custom_tab:
+            prompt = st.text_input("Prompt text", "")
+            extension = st.text_input("File extension", "")
+            if st.button("Generate"):
+                with st.spinner("Summarizing..."):
+                    for chapter in selected_chapters:
+                        _, file_path_en, _, file_path_np, textbook = chapter_url_from_id(chapter["_id"], files_dir=files_dir, textbook=None, mongo=db)
+
+                        summarizer = Summary(cfg, file_path_en, file_path_np, prompt+"\n \n {text}")
+                        summary_en, summary_np = summarizer.prompt_pdf()
+
+                        if summary_en is not None:
+                            files_dir = config["datadir"]
+                            save_loc = f'{files_dir}/{textbook["fp"]}{'en'}'
+                            os.makedirs(save_loc, exist_ok=True)
+                            save_name = f"{chapter['_id']}.{extension}"
+                            save_info = os.path.join(save_loc, save_name)
+                            with open(save_info, "w") as file:
+                                file.write(summary_en)
+
+                        if summary_np is not None:
+                            files_dir = config["datadir"]
+                            save_loc = f'{files_dir}/{textbook["fp"]}{'np'}'
+                            os.makedirs(save_loc, exist_ok=True)
+                            save_name = f"{chapter['_id']}-np.{extension}"
+                            save_info = os.path.join(save_loc, save_name)
+                            with open(save_info, "w") as file:
+                                file.write(summary_np)
+
+                        st.info(f"{summary_en} \n \n {summary_np}")
         with dictionary_tab:
             if st.button("Update Dictionary with Selection"):
                 with st.spinner("Updating..."):
