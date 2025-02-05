@@ -50,7 +50,8 @@ def split(client: MongoClient, files_dir: str, prefixes: list[str] | str):
 
         for chapter in collection.find({"_id": rgx}):
             try:
-                if textbook_pdf is not None:
+                #  if textbook_pdf is not None: # changed by Skip FEB 2025 - dont process if chapter['len'] === 0
+                if textbook_pdf is not None and chapter['len'] > 0:
                     firstPage = chapter['pn'] - 1
                     lastPage = chapter['pn'] + chapter['len'] - 2
 
@@ -75,7 +76,7 @@ def split(client: MongoClient, files_dir: str, prefixes: list[str] | str):
 
                     nsave_loc = f'{files_dir}/{textbook["fp"]}{'np'}'
                     os.makedirs(nsave_loc, exist_ok=True)
-                    nsave_name = f"{chapter['_id']}-np.pdf"
+                    nsave_name = f"{chapter['_id']}-nepali.pdf"
                     nsave_info = os.path.join(nsave_loc, nsave_name)
                     nchapter_pdf.save(nsave_info)
                     print("saved nepali chapter ")
