@@ -11,6 +11,10 @@ import nltk
 # import ssl
 import re
 
+nltk.download('stopwords')
+nltk.download('punkt_tab')
+stop_words = set(stopwords.words('english'))
+            
 class Dictionary:
     def __init__ (self, cfg):
         openai_api_key = cfg.getv("openai_api_key")
@@ -18,7 +22,8 @@ class Dictionary:
     def has_numbers(self, inputString):
         return any(char.isdigit() for char in inputString)
     def get_ch_data(self, ch, field):
-        search = re.search(r"([1-9]|10|11|12)(EN|S|SF|M|SS|N|H|V|CS)([0-9]{2})(\.[0-9]{2})?", ch, re.IGNORECASE)
+        # search = re.search(r"([1-9]|10|11|12)(EN|S|SF|M|SS|N|H|V|CS)([0-9]{2})(\.[0-9]{2})?", ch, re.IGNORECASE)
+        search = re.search(r"([1-9]|10|11|12)(EN|S|SF|M|SS|N|H|V|CS)([0-9]{2}\.[0-9]{2})?", ch, re.IGNORECASE)
         if field == "grade":
             grade = search[1]
             return int(grade)
@@ -72,9 +77,9 @@ class Dictionary:
             #     pass
             # else:
             #     ssl._create_default_https_context = _create_unverified_https_context
-            nltk.download('stopwords')
-            nltk.download('punkt_tab')
-            stop_words = set(stopwords.words('english'))
+            # nltk.download('stopwords')
+            # nltk.download('punkt_tab')
+            # stop_words = set(stopwords.words('english'))
             
             # chapter_language = detect(chapter_content)
             # if chapter_language == "ne":
@@ -89,17 +94,23 @@ class Dictionary:
             collection = db.get_collection("dictionary")
 
             word_tokens = word_tokenize(chapter_content)
-            filtered_text = []
+
+            # filtered_text = []
+            filtered_text = set()
 
             for w in word_tokens:
                 word = w.lower()
                 if word not in stop_words:
-                    filtered_text.append(word)
+                    #filtered_text.append(word)
+                    filtered_text.add(word)
 
             for word in filtered_text:
                 word = word.translate(str.maketrans('', '', string.punctuation))
-                found = collection.count_documents({"en": word})
-                if found == 0 and len(word) > 2 and self.has_numbers(word) == False:
+                # found = collection.count_documents({"en": word})
+                query = {"en": word}
+                entry = collection.find_one(query)
+                #  if found == 0 and len(word) > 2 and self.has_numbers(word) == False:
+                if entry is None and len(word) > 2 and self.has_numbers(word) == False:
                     definition = self.define_word(word)
                     if ("Definition Not Found" or "Please provide the word") not in definition:
                         np_word = self.translate_word(word, "en")
@@ -111,9 +122,9 @@ class Dictionary:
                             "ch_id": [{sub_new: new_chapter}]
                         }
                         collection.insert_one(entry)
-                elif found > 0 and len(word) > 2 and self.has_numbers(word) == False:
-                    query = {"en": word}
-                    entry = collection.find_one(query)
+                elif entry is not None and len(word) > 2 and self.has_numbers(word) == False:
+                    # query = {"en": word}
+                    # entry = collection.find_one(query)
                     check = {sub_new: new_chapter}
                     
                     index = 0
@@ -138,8 +149,8 @@ class Dictionary:
                         grade_ori = self.get_ch_data(ch_ori, "grade")
                         number_ori = self.get_ch_data(ch_ori, "number")
                         sect_ori = self.has_section(ch_ori)
-                        if (check not in entry['ch_id'] and grade_new < grade_ori) or (check not in entry['ch_id'] and grade_new == grade_ori and number_new < number_ori) or (check not in entry['ch_id'] and grade_new == grade_ori and number_ori == number_new and ((sect_ori == False and sect_new != False) or sect_new < sect_ori)):
-                            # TODO: add this back to the condition but handling None case: ((sect_ori == None and sect_new != None) or sect_new < sect_ori))
+                        if (check not in entry['ch_id'] and grade_new < grade_ori) or (check not in entry['ch_id'] and grade_new == grade_ori and number_new < number_ori):
+                    
                             place = f'ch_id.{index}.{sub_new}'
                             new = {"$set": {place: new_chapter}}    
                             collection.update_one(query, new)
