@@ -25,7 +25,7 @@ def chapter_url_from_id(chapter_id: str, files_dir: str, textbook: dict | None, 
         local_path_en = f'{files_dir}/{textbook["fp"]}{'en'}/{chapter_id}.pdf'
     if textbook['nfn'] != '':
         url_np = f"https://looma.website/content/textbooks/{textbook['fp']}{textbook['nfn']}"
-        local_path_np = f'{files_dir}/{textbook["fp"]}{'np'}/{chapter_id}-np.pdf'
+        local_path_np = f'{files_dir}/{textbook["fp"]}{'np'}/{chapter_id}-nepali.pdf'
     return url_en, local_path_en, url_np, local_path_np, textbook
 
 
