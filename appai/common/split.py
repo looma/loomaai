@@ -1,3 +1,13 @@
+# filename: split.py
+# author: Praneel
+#
+#  create individual chapter PDFs from a textbook, using mongoDB "chapters" collection page numbers and lengths
+#
+#. change log: FEB 2025 changes by Skip 
+#          fixed a bug where len=0 or nlen=0 caused crreation of a chapter containing the whole textbook
+#.         around lines 64 and 80
+#
+
 import io
 import os
 import re
@@ -50,7 +60,8 @@ def split(client: MongoClient, files_dir: str, prefixes: list[str] | str):
 
         for chapter in collection.find({"_id": rgx}):
             try:
-                if textbook_pdf is not None:
+                #  if textbook_pdf is not None: # changed by Skip FEB 2025 - dont process if chapter['len'] === 0
+                if textbook_pdf is not None and chapter['len'] > 0:
                     firstPage = chapter['pn'] - 1
                     lastPage = chapter['pn'] + chapter['len'] - 2
 
@@ -66,7 +77,7 @@ def split(client: MongoClient, files_dir: str, prefixes: list[str] | str):
                     chapter_pdf.save(save_info)
                     print("saved english ch")
 
-                if ntextbook_pdf is not None:
+                if ntextbook_pdf is not None and chapter['nlen'] > 0:
                     nfirstPage = chapter['npn'] - 1
                     nlastPage = chapter['npn'] + chapter['nlen'] - 2
 
@@ -75,7 +86,7 @@ def split(client: MongoClient, files_dir: str, prefixes: list[str] | str):
 
                     nsave_loc = f'{files_dir}/{textbook["fp"]}{'np'}'
                     os.makedirs(nsave_loc, exist_ok=True)
-                    nsave_name = f"{chapter['_id']}-np.pdf"
+                    nsave_name = f"{chapter['_id']}-nepali.pdf"
                     nsave_info = os.path.join(nsave_loc, nsave_name)
                     nchapter_pdf.save(nsave_info)
                     print("saved nepali chapter ")
