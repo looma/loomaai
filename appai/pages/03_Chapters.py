@@ -52,8 +52,8 @@ def ChaptersUI(cfg):
                 database_name=DATABASE_NAME,
                 collection_name="chapters",
                 filters={
-                    "_id": {"$regex": "^(" + "|".join(prefixes) + ")"}
-                },
+                    "_id": {"$regex": "^(" + "|".join(prefixes) + ")(?![A-Z])"},
+                    "$or": [{"len": {"$gt": 0}}, {"nlen": {"$gt": 0}}]},
                 columns=["_id", "dn"]
             )
 
@@ -62,7 +62,8 @@ def ChaptersUI(cfg):
 
     if len(selected_chapters) > 0:
         populate_tab, summary_tab, quiz_tab, custom_tab, dictionary_tab = st.tabs(
-            ["Populate Relevant Activities", "Summary", "Quiz", "Custom Prompt", "Dictionary"])  # TODO: add more prompt types
+            ["Populate Relevant Activities", "Summary", "Quiz", "Custom Prompt",
+             "Dictionary"])  # TODO: add more prompt types
         with populate_tab:
             st.info("Make sure to embed all activities first (sidebar -> Activities)")
             if st.button("Populate Relevant Activities", key="populate_button"):
@@ -82,9 +83,12 @@ def ChaptersUI(cfg):
             if st.button("Summarize Selection", key="summarize_button"):
                 with st.spinner("Summarizing..."):
                     for chapter in selected_chapters:
-                        _, file_path_en, _, file_path_np, textbook = chapter_url_from_id(chapter["_id"], files_dir=files_dir, textbook=None, mongo=db)
+                        _, file_path_en, _, file_path_np, textbook = chapter_url_from_id(chapter["_id"],
+                                                                                         files_dir=files_dir,
+                                                                                         textbook=None, mongo=db)
 
-                        summarizer = Summary(cfg, file_path_en, file_path_np, "Please summarize the following text in one paragraph in the same language it is written in \n if the text is in Nepali keep it in Nepali and if the text is in English keep it in English\n{text}")
+                        summarizer = Summary(cfg, file_path_en, file_path_np,
+                                             "Please summarize the following text in one paragraph in the same language it is written in \n if the text is in Nepali keep it in Nepali and if the text is in English keep it in English\n{text}")
                         summary_en, summary_np = summarizer.prompt_pdf()
 
                         if summary_en is not None:
@@ -110,9 +114,12 @@ def ChaptersUI(cfg):
             if st.button("Generate Quizzes for Selection"):
                 with st.spinner("Summarizing..."):
                     for chapter in selected_chapters:
-                        _, file_path_en, _, file_path_np, textbook = chapter_url_from_id(chapter["_id"], files_dir=files_dir, textbook=None, mongo=db)
+                        _, file_path_en, _, file_path_np, textbook = chapter_url_from_id(chapter["_id"],
+                                                                                         files_dir=files_dir,
+                                                                                         textbook=None, mongo=db)
 
-                        summarizer = Summary(cfg, file_path_en, file_path_np, "Please make a quiz of the following text in the same language it is written in. Make an answer key but make sure answers are not shown at all on the quiz itself. If the text is in Nepali keep it in Nepali and if the text is in English keep it in English \n {text}")
+                        summarizer = Summary(cfg, file_path_en, file_path_np,
+                                             "Please make a quiz of the following text in the same language it is written in. Make an answer key but make sure answers are not shown at all on the quiz itself. If the text is in Nepali keep it in Nepali and if the text is in English keep it in English \n {text}")
                         summary_en, summary_np = summarizer.prompt_pdf()
 
                         if summary_en is not None:
@@ -140,9 +147,11 @@ def ChaptersUI(cfg):
             if st.button("Generate"):
                 with st.spinner("Summarizing..."):
                     for chapter in selected_chapters:
-                        _, file_path_en, _, file_path_np, textbook = chapter_url_from_id(chapter["_id"], files_dir=files_dir, textbook=None, mongo=db)
+                        _, file_path_en, _, file_path_np, textbook = chapter_url_from_id(chapter["_id"],
+                                                                                         files_dir=files_dir,
+                                                                                         textbook=None, mongo=db)
 
-                        summarizer = Summary(cfg, file_path_en, file_path_np, prompt+"\n \n {text}")
+                        summarizer = Summary(cfg, file_path_en, file_path_np, prompt + "\n \n {text}")
                         summary_en, summary_np = summarizer.prompt_pdf()
 
                         if summary_en is not None:
@@ -168,11 +177,12 @@ def ChaptersUI(cfg):
             if st.button("Update Dictionary with Selection"):
                 with st.spinner("Updating..."):
                     for chapter in selected_chapters:
-                        _, file_path, _, nepali_fp, textbook = chapter_url_from_id(chapter["_id"], files_dir=files_dir,  textbook=None, mongo=db)
+                        _, file_path, _, nepali_fp, textbook = chapter_url_from_id(chapter["_id"], files_dir=files_dir, textbook=None, mongo=db)
                         quizzer = Summary(cfg, file_path, nepali_fp, "")
                         dictionary_maker = Dictionary(cfg)
-                        # print(quizzer.extract_text()[0])
-                        dictionary_maker.dict_update(chapter["_id"], quizzer.extract_text()[0], client)
+                        text_en, text_np = quizzer.extract_text()
+                        if text_en is not None:
+                            dictionary_maker.dict_update(chapter["_id"], text_en, client)
                 st.success("Updated dictionary in MongoDB for selected chapters")
 
 
