@@ -61,6 +61,15 @@ def ChaptersUI(cfg):
     db = client['looma']
 
     if len(selected_chapters) > 0:
+
+        #add this code to sort selected_chapters by grade level
+        import re
+        pattern = r"(^\d{1,2}).*"
+        replacement = r"\1"
+        selected_chapters.sort(key = lambda x: int(re.sub(pattern, replacement, x['_id'])))
+
+        #the sub-order of subjects inside a grade level doesnt matter to our code
+
         populate_tab, summary_tab, quiz_tab, custom_tab, dictionary_tab = st.tabs(
             ["Populate Relevant Activities", "Summary", "Quiz", "Custom Prompt",
              "Dictionary"])  # TODO: add more prompt types
