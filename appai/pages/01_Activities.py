@@ -31,6 +31,7 @@ def download_snapshot(snapshot_location):
     # COLLECTION_NAME = "activities"
     try:
         # Fetch the snapshot file from the provided location
+        # Fetch the snapshot file from the provided location
         response = requests.get(snapshot_location)
         response.raise_for_status()
         return response.content
