@@ -24,13 +24,6 @@ COPY .env /app/appai/.env
 RUN mkdir -p /root/.streamlit
 COPY dotstreamlit/config.toml /root/.streamlit
 
-# Now let's do local directory structure setup
-COPY setup.sh /app/setup.sh
-
-# loomaai specific configuration 
-RUN mkdir -p /root/.config/loomaai/
-COPY config.json /root/.config/loomaai/config.json
-
 # laiapp port
 EXPOSE 4700
 

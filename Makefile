@@ -7,6 +7,13 @@ COMPOSE_FILE := docker-compose.yml
 # Targets
 .PHONY: build update run halt status
 
+define setup_env
+    export MONGO_URI=mongodb://localhost:47017/looma; \
+    export MONGO_DB=looma; \
+    export QDRANT_URL=http://localhost:46333; \
+    export DATADIR=data;
+endef
+
 build:
 	@echo "Building loomaai..."
 	@docker build -t loomaai -f Dockerfile .
@@ -42,10 +49,11 @@ shell:
 	@echo "Opening a shell in the loomaai container..."
 	@docker exec -it looma-streamlit /bin/bash
 
-embed:
-	@echo "Running appai.cli.embed"
-	export MONGO_URI = "mongodb://localhost:47017/looma"
-	export MONGO_DB = "looma"
-	export QDRANT_URL = "http://localhost:46333"
-	export DATADIR = "data"
-	python3 -m appai.cli.embed
+embed-all:
+	@$(setup_env) python3 -m appai.cli.embed
+
+embed-missing:
+	@$(setup_env) python3 -m appai.cli.embed --missing-only
+
+populate-mongo:
+	@$(setup_env) python3 -m appai.cli.populate_mongo
