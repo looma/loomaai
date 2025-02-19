@@ -7,6 +7,12 @@ networks:
 services:
   looma-streamlit:
     # image: ghcr.io/looma/loomadb:latest
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY} # from host environment
+      - QDRANT_URL=http://looma-qdrant:6333
+      - MONGO_URI=mongodb://looma-db:27017
+      - MONGO_DB=looma
+      - DATADIR=/app/data/files
     image: loomaai:latest
     container_name: looma-streamlit
     ports:

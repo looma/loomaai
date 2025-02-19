@@ -1,3 +1,5 @@
+import os
+
 from .summary import *
 # from .config import *
 
@@ -16,8 +18,8 @@ nltk.download('punkt_tab')
 stop_words = set(stopwords.words('english'))
             
 class Dictionary:
-    def __init__ (self, cfg):
-        openai_api_key = cfg.getv("openai_api_key")
+    def __init__ (self):
+        openai_api_key = os.getenv("OPENAI_API_KEY")
         self.llm = ChatOpenAI(temperature=0, model_name="gpt-4o-mini", api_key=openai_api_key)
     def has_numbers(self, inputString):
         return any(char.isdigit() for char in inputString)

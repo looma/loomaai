@@ -1,6 +1,7 @@
+import os
+
 import streamlit as st
 from common.split import *
-from common.config import ConfigInit
 from qdrant_client import QdrantClient, models
 from common.streamlit_mongo_viewer import mongodb_viewer
 from common.embed import objectid_to_uuid
@@ -36,12 +37,11 @@ def remove_textbook(mongo, qdrant, textbooks):
         # when we find a lesson with a reference to an old chapter, we dont remove the reference right away. instead, we make a list of such lessons for our lesson-making teams to revise.
 
 
-def TextbookUI(cfg):
-    config = cfg.json()
+def TextbookUI():
     st.title('Textbook')
 
-    MONGO_URI = f'mongodb://{config["mongo"]["host"]}:{config["mongo"]["port"]}'
-    DATABASE_NAME = f'{config["mongo"]["database"]}'
+    MONGO_URI = os.getenv("MONGO_URI")
+    DATABASE_NAME = os.getenv("MONGO_DB")
     FILTERS = {}
     selected = mongodb_viewer(
         client_uri=MONGO_URI,
@@ -62,7 +62,7 @@ def TextbookUI(cfg):
             try:
                 with st.spinner("Splitting..."):
                     # gets the directory that the chapters have to go to
-                    datadir = config["datadir"]
+                    datadir = os.getenv("DATADIR")
                     # calls the MongoClient and runs the split function in loomaai/appai/common/split.py
                     client = MongoClient(MONGO_URI)
                     split(client, datadir, textbooks)
@@ -77,7 +77,7 @@ def TextbookUI(cfg):
             try:
                 with st.spinner("Removing..."):
                     client = MongoClient(MONGO_URI)
-                    qd = QdrantClient(url=f'http://{config["qdrant"]["host"]}:{config["qdrant"]["port"]}')
+                    qd = QdrantClient(url=os.getenv("QDRANT_URL"))
                     remove_textbook(client.get_database('looma'), qd, textbooks)
                 st.success(f"Removed {textbooks} textbooks from Qdrant")
             except Exception as exception:
@@ -92,7 +92,6 @@ def TextbookUI(cfg):
 
 if __name__ == '__main__':
     try:
-        cfg = ConfigInit()
-        TextbookUI(cfg)
+        TextbookUI()
     except Exception as e:
         st.error(str(e))
