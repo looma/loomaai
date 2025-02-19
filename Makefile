@@ -20,7 +20,7 @@ update:
 run:
 	@echo "Make sure Looma-II docker compose is running first!"
 	@echo "Make sure your .env file is populated with the OpenAI api key"
-	@source .env
+	. .env
 	@echo "Starting loomaai services..."
 	@docker-compose -f $(LOOMA_AI_DIR)/$(COMPOSE_FILE) up -d
 	@echo "loomaai is running."
