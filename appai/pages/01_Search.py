@@ -1,7 +1,8 @@
+import os
+
 import streamlit as st
 from qdrant_client import QdrantClient
 
-from common.config import ConfigInit
 from common.query import query
 
 def search_qdrant(q, qdrant_client):
@@ -25,12 +26,11 @@ def display_results(results):
     else:
         st.write("No results found.")
 
-def QdrantSearchUI(cfg):
-    config = cfg.json()
+def QdrantSearchUI():
     st.title('Qdrant Search')
 
     # Initialize Qdrant client
-    qdrant_client = QdrantClient(url=f'http://{config["qdrant"]["host"]}:{config["qdrant"]["port"]}')
+    qdrant_client = QdrantClient(url=os.getenv("QDRANT_URL"))
 
     # Input: Search query from the user
     q = st.text_input("Enter your search query:")
@@ -47,7 +47,6 @@ def QdrantSearchUI(cfg):
 
 if __name__ == '__main__':
     try:
-        cfg = ConfigInit()
-        QdrantSearchUI(cfg)
+        QdrantSearchUI()
     except Exception as e:
         st.error(str(e))

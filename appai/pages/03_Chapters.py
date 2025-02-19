@@ -1,17 +1,16 @@
-import os
 import tempfile
 import streamlit as st
 
 from common.activity_chapter import chapter_url_from_id
-from common.summary import *
+from common.summary import Summary
 from common.embed import objectid_to_uuid
 from common.populate_relevant_resources import populate_resources_for_chapter
-from common.config import ConfigInit
 from common.streamlit_mongo_viewer import mongodb_viewer
 from pymongo import MongoClient
 from qdrant_client import QdrantClient
 
 from common.dict import Dictionary
+import os
 
 
 # Defining the filepath for uploading the file that needs to be summarized
@@ -24,17 +23,15 @@ def filePath(file):
     return None
 
 
-def ChaptersUI(cfg):
-    config = cfg.json()
+def ChaptersUI():
     st.title("Chapters")
-    MONGO_URI = f"mongodb://{config['mongo']['host']}:{config['mongo']['port']}"
-    DATABASE_NAME = f"{config['mongo']['database']}"
-    files_dir = config["datadir"]
+    MONGO_URI = os.getenv("MONGO_URI")
+    DATABASE_NAME = os.getenv("MONGO_DB")
+    files_dir = os.getenv("DATADIR")
 
-    qd = QdrantClient(url=f"http://{config['qdrant']['host']}:{config['qdrant']['port']}")
+    qd = QdrantClient(url=os.getenv("QDRANT_URL"))
 
     selected_chapters = []
-
     with st.expander("Select Textbooks", expanded=True):
         selected_textbooks = mongodb_viewer(
             client_uri=MONGO_URI,
@@ -96,12 +93,11 @@ def ChaptersUI(cfg):
                                                                                          files_dir=files_dir,
                                                                                          textbook=None, mongo=db)
 
-                        summarizer = Summary(cfg, file_path_en, file_path_np,
+                        summarizer = Summary(file_path_en, file_path_np,
                                              "Please summarize the following text in one paragraph in the same language it is written in \n if the text is in Nepali keep it in Nepali and if the text is in English keep it in English\n{text}")
                         summary_en, summary_np = summarizer.prompt_pdf()
 
                         if summary_en is not None:
-                            files_dir = config["datadir"]
                             save_loc = f'{files_dir}/{textbook["fp"]}{'en'}'
                             os.makedirs(save_loc, exist_ok=True)
                             save_name = f"{chapter['_id']}.summary"
@@ -110,7 +106,6 @@ def ChaptersUI(cfg):
                                 file.write(summary_en)
 
                         if summary_np is not None:
-                            files_dir = config["datadir"]
                             save_loc = f'{files_dir}/{textbook["fp"]}{'np'}'
                             os.makedirs(save_loc, exist_ok=True)
                             save_name = f"{chapter['_id']}-np.summary"
@@ -127,12 +122,11 @@ def ChaptersUI(cfg):
                                                                                          files_dir=files_dir,
                                                                                          textbook=None, mongo=db)
 
-                        summarizer = Summary(cfg, file_path_en, file_path_np,
+                        summarizer = Summary( file_path_en, file_path_np,
                                              "Please make a quiz of the following text in the same language it is written in. Make an answer key but make sure answers are not shown at all on the quiz itself. If the text is in Nepali keep it in Nepali and if the text is in English keep it in English \n {text}")
                         summary_en, summary_np = summarizer.prompt_pdf()
 
                         if summary_en is not None:
-                            files_dir = config["datadir"]
                             save_loc = f'{files_dir}/{textbook["fp"]}{'en'}'
                             os.makedirs(save_loc, exist_ok=True)
                             save_name = f"{chapter['_id']}.quiz"
@@ -141,7 +135,6 @@ def ChaptersUI(cfg):
                                 file.write(summary_en)
 
                         if summary_np is not None:
-                            files_dir = config["datadir"]
                             save_loc = f'{files_dir}/{textbook["fp"]}{'np'}'
                             os.makedirs(save_loc, exist_ok=True)
                             save_name = f"{chapter['_id']}-np.quiz"
@@ -160,11 +153,10 @@ def ChaptersUI(cfg):
                                                                                          files_dir=files_dir,
                                                                                          textbook=None, mongo=db)
 
-                        summarizer = Summary(cfg, file_path_en, file_path_np, prompt + "\n \n {text}")
+                        summarizer = Summary(file_path_en, file_path_np, prompt + "\n \n {text}")
                         summary_en, summary_np = summarizer.prompt_pdf()
 
                         if summary_en is not None:
-                            files_dir = config["datadir"]
                             save_loc = f'{files_dir}/{textbook["fp"]}{'en'}'
                             os.makedirs(save_loc, exist_ok=True)
                             save_name = f"{chapter['_id']}.{extension}"
@@ -173,7 +165,6 @@ def ChaptersUI(cfg):
                                 file.write(summary_en)
 
                         if summary_np is not None:
-                            files_dir = config["datadir"]
                             save_loc = f'{files_dir}/{textbook["fp"]}{'np'}'
                             os.makedirs(save_loc, exist_ok=True)
                             save_name = f"{chapter['_id']}-np.{extension}"
@@ -187,8 +178,8 @@ def ChaptersUI(cfg):
                 with st.spinner("Updating..."):
                     for chapter in selected_chapters:
                         _, file_path, _, nepali_fp, textbook = chapter_url_from_id(chapter["_id"], files_dir=files_dir, textbook=None, mongo=db)
-                        quizzer = Summary(cfg, file_path, nepali_fp, "")
-                        dictionary_maker = Dictionary(cfg)
+                        quizzer = Summary(file_path, nepali_fp, "")
+                        dictionary_maker = Dictionary()
                         text_en, text_np = quizzer.extract_text()
                         if text_en is not None:
                             dictionary_maker.dict_update(chapter["_id"], text_en, client)
@@ -197,7 +188,6 @@ def ChaptersUI(cfg):
 
 if __name__ == '__main__':
     try:
-        cfg = ConfigInit()
-        ChaptersUI(cfg)
+        ChaptersUI()
     except Exception as e:
         st.error(str(e))

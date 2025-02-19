@@ -1,18 +1,17 @@
+import os
+
 import streamlit as st
 import requests
 from io import BytesIO
 import logging
-
-from common.config import *
 
 # Qdrant server configuration
 
 COLLECTION_NAME = "activities"
 
 # Function to create a snapshot of the specified collection
-def create_snapshot(cfg, collection_name):
-    config = cfg.json()
-    QDRANT_URL = f"http://{config['qdrant']['host']}:{config['qdrant']['port']}"
+def create_snapshot( collection_name):
+    QDRANT_URL = os.getenv("QDRANT_URL")
     snapshot_endpoint = f"{QDRANT_URL}/collections/{collection_name}/snapshots"
     try:
         # Send a request to create a snapshot
@@ -40,7 +39,7 @@ def download_snapshot(snapshot_location):
         return None
 
 # Streamlit App
-def main(cfg):
+def main():
     st.title("Activities")
     st.header("Generate Embeddings")
     st.markdown("""
@@ -58,14 +57,13 @@ def main(cfg):
 
     if st.button(f"Create and Download Snapshot of '{COLLECTION_NAME}' Collection"):
         st.info("Creating snapshot, please wait...")
-        snapshot_info = create_snapshot(cfg, COLLECTION_NAME)
+        snapshot_info = create_snapshot(COLLECTION_NAME)
 
         if snapshot_info:
             st.text(snapshot_info)
             snapshot_name = snapshot_info.get("result", {}).get("name")
             if snapshot_name:
-                config = cfg.json()
-                QDRANT_URL = f"http://{config['qdrant']['host']}:{config['qdrant']['port']}"
+                QDRANT_URL = os.getenv("QDRANT_URL")
                 snapshot_endpoint = f"{QDRANT_URL}/collections/{COLLECTION_NAME}/snapshots/{snapshot_name}"
                 st.success("Snapshot created successfully. Downloading...")
                 snapshot_data = download_snapshot(snapshot_location=snapshot_endpoint)
@@ -87,8 +85,7 @@ def main(cfg):
 
 if __name__ == "__main__":
     try:
-        cfg = ConfigInit()
-        main(cfg)
+        main()
     except Exception as e:
         st.error(str(e))
         logging.error(str(e))
