@@ -5,6 +5,7 @@ __pycache__/
 textbooks
 venv
 env
+.env
 appai/textbooks
 .DS_Store
 config.json
