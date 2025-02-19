@@ -8,5 +8,3 @@ env
 .env
 appai/textbooks
 .DS_Store
-config.json
-config-external.json
