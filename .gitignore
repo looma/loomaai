@@ -1,10 +1,6 @@
 data/
-.data/
 *.log
 __pycache__/
-textbooks
-venv
 env
 .env
-appai/textbooks
 .DS_Store
