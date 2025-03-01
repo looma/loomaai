@@ -10,7 +10,7 @@ def translate_lessons(db: Database, llm: ChatOpenAI):
             for data in lesson_data:
                 if data.get("ft") == "inline" and "html" in data:
                     translated_html = prompt_text(llm, "Translate the following html to Nepali, preserving all formatting and html, only translating the visible text. Return only the html with no extra comments: {text}", data["html"])
-                    data["html_np"] = translated_html.removeprefix("```".removesuffix("```"))
+                    data["html_np"] = translated_html.removeprefix("```").removesuffix("```")
                 lesson_data_np.append(data)
             db.lessons.update_one(
                 {"_id": lesson["_id"]},
