@@ -40,13 +40,7 @@ class Summary:
 
     #use the extracted text to send to OpenAI to summarize in ChatGPT
     def prompt_text(self, text):
-        summarize_prompt = PromptTemplate(
-            input_variables=["text"],
-            template=self.prompt
-        )
-        summarize_chain = summarize_prompt | self.llm | StrOutputParser()
-        summary = summarize_chain.invoke({"text": text})
-        return summary
+        return prompt_text(self.llm, self.prompt, text)
     
     #returning the summary
     def prompt_pdf(self):
@@ -59,3 +53,12 @@ class Summary:
         if text_content_np:
             summary_np = self.prompt_text(text_content_np)
         return summary_en, summary_np
+
+def prompt_text(llm, prompt, text):
+    summarize_prompt = PromptTemplate(
+        input_variables=["text"],
+        template=prompt
+    )
+    summarize_chain = summarize_prompt | llm | StrOutputParser()
+    summary = summarize_chain.invoke({"text": text})
+    return summary

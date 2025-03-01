@@ -8,10 +8,11 @@ COMPOSE_FILE := docker-compose.yml
 .PHONY: build update run halt status
 
 define setup_env
-    export MONGO_URI=mongodb://localhost:47017/looma; \
+    export MONGO_URI=mongodb://localhost:47017; \
     export MONGO_DB=looma; \
     export QDRANT_URL=http://localhost:46333; \
-    export DATADIR=data;
+    export DATADIR=data; \
+    . .env;
 endef
 
 build:
@@ -51,6 +52,9 @@ shell:
 
 embed-all:
 	@$(setup_env) python3 -m appai.cli.embed
+
+translate-lessons:
+	@$(setup_env) python3 -m appai.cli.translate_lessons
 
 embed-missing:
 	@$(setup_env) python3 -m appai.cli.embed --missing-only
