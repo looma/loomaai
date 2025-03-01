@@ -80,6 +80,15 @@ make populate-mongo
 * This process will populate the "related resources" for every chapter in [Looma-II](https://github.com/looma/Looma-II)
 * This process is additive and will not overwrite any existing related resources in MongoDB, it will also not add duplicate relations
 
+#### Translate Lessons
+* Requires an OpenAI key (see step 4 of Setup)
+
+```bash
+make translate-lessons
+```
+
+This process will update all lessons in MongoDB with a new field `data_np` containing translated lesson data. It will overwrite the existing `data_np` field if present.
+
 
 ## More Developer Notes
 
