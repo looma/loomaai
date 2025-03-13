@@ -14,15 +14,13 @@ def translate_lessons(db: Database, llm: ChatOpenAI):
 
 def translate_one_lesson(db: Database, lesson, llm: ChatOpenAI):
     lesson_data: list = lesson["data"]
-    lesson_data_nepali: list = []
     for data in lesson_data:
         if data.get("ft") == "inline" and "html" in data:
             translated_html = prompt_text(llm,
                                           "Translate the following html to Nepali, preserving all formatting and html, only translating the visible text. Return only the html with no extra comments: {text}",
                                           data["html"])
-            data["html_np"] = translated_html.removeprefix("```").removesuffix("```")
-        lesson_data_nepali.append(data)
+            data["nepali"] = translated_html.removeprefix("```").removesuffix("```")
     db.lessons.update_one(
         {"_id": lesson["_id"]},
-        {"$set": {"nepali": lesson_data_nepali}}
+        {"$set": {"data": lesson_data}}
     )
