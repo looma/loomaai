@@ -12,7 +12,8 @@ define setup_env
     export MONGO_DB=looma; \
     export QDRANT_URL=http://localhost:46333; \
     export DATADIR=data; \
-    . .env;
+    . .env; \
+    source env/bin/activate;
 endef
 
 build:
