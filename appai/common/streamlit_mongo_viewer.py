@@ -2,7 +2,7 @@ import streamlit as st
 from pymongo import MongoClient
 import pandas as pd
 
-def mongodb_viewer(client_uri: str, database_name: str, collection_name: str, filters=None, columns=None) -> list:
+def mongodb_viewer(client_uri: str, database_name: str, collection_name: str, filters=None, columns=None, hidden_columns=[]) -> list:
     """
     Displays a read-only data table with a single checkbox that edits a 'selected' column for row selection.
 
@@ -29,7 +29,7 @@ def mongodb_viewer(client_uri: str, database_name: str, collection_name: str, fi
 
     # Apply projection (columns to display) if specified
     if columns:
-        projection = {col: 1 for col in columns}
+        projection = {col: 1 for col in columns}  # Include only specified columns
     else:
         projection = None  # If no columns specified, fetch all fields
 
@@ -65,7 +65,7 @@ def mongodb_viewer(client_uri: str, database_name: str, collection_name: str, fi
         df['selected'] = toggle_all
 
         # Show the updated DataFrame with 'selected' column
-        edited_df = st.data_editor(df, disabled=columns)  # Drop the '_id' column for display, optional
+        edited_df = st.data_editor(df, disabled=columns, column_order=["selected", *columns])  # Drop the '_id' column for display, optional
 
         # Collect selected documents where 'selected' is True
         selected_docs = edited_df[edited_df['selected']].to_dict(orient='records')

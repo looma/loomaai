@@ -82,12 +82,6 @@ def TextbookUI():
                 st.success(f"Removed {textbooks} textbooks from Qdrant")
             except Exception as exception:
                 st.error(f"Error removing textbooks {exception}")
-    #
-    # with dict:
-    #     st.write('hi')
-    #
-    # with embed:
-    #     st.write('hi')
 
 
 if __name__ == '__main__':
