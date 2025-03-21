@@ -1,6 +1,8 @@
 from pymongo.database import Database
 from langchain_openai import ChatOpenAI
 from .summary import prompt_text
+from bson.objectid import ObjectId
+from datetime import datetime
 
 def translate_lessons(db: Database, llm: ChatOpenAI):
     for lesson in db.get_collection("lessons").find({}):
@@ -21,6 +23,6 @@ def translate_one_lesson(db: Database, lesson, llm: ChatOpenAI):
                                           data["html"])
             data["nepali"] = translated_html.removeprefix("```").removesuffix("```")
     db.lessons.update_one(
-        {"_id": lesson["_id"]},
-        {"$set": {"data": lesson_data}}
+        {"_id": ObjectId(lesson["_id"])},
+        {"$set": {"data": lesson_data,"translator":"AI","translated": datetime.now()}}
     )
