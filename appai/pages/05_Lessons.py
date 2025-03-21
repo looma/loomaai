@@ -23,7 +23,7 @@ def main():
         database_name=DATABASE_NAME,
         collection_name="lessons",
         filters=FILTERS,
-        columns=["dn", "ndn", "data"],
+        columns=["dn", "ndn", "translator", "translated", "data"],
         hidden_columns=["data"]
     )
     openai_api_key = os.getenv("OPENAI_API_KEY")
