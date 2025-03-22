@@ -13,6 +13,9 @@ from alive_progress import alive_bar
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pymongo.database import Database
 
+from .activity_video import VideoActivity
+
+
 def generate_vectors(mongo_client: MongoClient, vector_db: QdrantClient, missing_only: bool):
     db = mongo_client.get_database("looma")
     activities_collection = db.get_collection("activities")
@@ -27,7 +30,7 @@ def generate_vectors(mongo_client: MongoClient, vector_db: QdrantClient, missing
         encode_kwargs=encode_kwargs
     )
 
-    with alive_bar(activities_collection.count_documents({"ft": {"$in": ["chapter", "html", "pdf"]}})) as progress_bar:
+    with alive_bar(activities_collection.count_documents({"ft": {"$in": ["chapter", "html", "pdf", "video"]}})) as progress_bar:
         # Use ThreadPoolExecutor to speed up the loop
         with ThreadPoolExecutor(max_workers=10) as executor:
             # Submit tasks to the pool
@@ -41,6 +44,8 @@ def generate_vectors(mongo_client: MongoClient, vector_db: QdrantClient, missing
                     ac = PdfActivity(activity)
                 if activity["ft"] == "chapter":
                     ac = ChapterActivity(activity)
+                if activity["ft"] == "video":
+                    ac = VideoActivity(activity)
                 futures[executor.submit(process_activity, ac, hf, vector_db, db, missing_only)] = ac
 
             # Ensure all futures complete and get the result (if needed)
