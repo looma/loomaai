@@ -62,3 +62,9 @@ embed-missing:
 
 populate-mongo:
 	@$(setup_env) python3 -m appai.cli.populate_mongo
+
+video-captions:
+	@$(setup_env) python3 -m appai.cli.captions
+
+translate-captions:
+	@$(setup_env) python3 -m appai.cli.translate_captions

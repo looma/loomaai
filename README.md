@@ -89,6 +89,15 @@ make translate-lessons
 
 This process will update all lessons in MongoDB with a new field `data_np` containing translated lesson data. It will overwrite the existing `data_np` field if present.
 
+#### Translate Lessons
+* Requires an OpenAI key (see step 4 of Setup)
+
+```bash
+make video-captions
+```
+
+This process will iterate through MongoDB "activities" collection and filter for "ft" = "video". It will reference the field "fn" and download each mp4 from the remote looma server, transcribe the video, then save a file in `data/content/video_captions/` with the same filename as the video, but with the extension vtt. These generated captions must be manually uploaded to looma website.
+
 
 ## More Developer Notes
 
