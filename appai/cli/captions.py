@@ -48,6 +48,4 @@ def transcribe_all_videos():
                 print(f"ERROR on activity {activity["_id"]}: {e}")
             progress_bar()
 
-
-
 transcribe_all_videos()

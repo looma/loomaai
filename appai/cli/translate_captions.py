@@ -24,7 +24,6 @@ def translate_vtt_to_np(vtt_path, vtts_dir):
 
         if stripped_line and "-->" not in stripped_line and not stripped_line.startswith("WEBVTT"):
             translated_line = translator.translate(stripped_line)
-            print(translated_line)
         else:
             translated_line = stripped_line
 
@@ -34,11 +33,19 @@ def translate_vtt_to_np(vtt_path, vtts_dir):
     with open(output_vtt_path, "w", encoding="utf-8") as file:
         file.write("\n".join(translated_lines))
 
-    print(output_vtt_path)
 
 data_dir = os.getenv("DATADIR")
 
 all_vtts = list_files_recursive(data_dir+"/content/video_captions/en/")
+vtts_dir = data_dir+"/content/video_captions/"
 with alive_bar(len(all_vtts)) as progress_bar:
     for vtt in all_vtts:
-        translate_vtt_to_np(vtt, data_dir+"/content/video_captions/")
+        try:
+            if os.path.exists(vtts_dir+'ne/'+ vtt.removeprefix(vtts_dir+'en/')):
+                print("Skipping " + vtt + ": translation already on disk")
+            else:
+                translate_vtt_to_np(vtt, vtts_dir)
+                print("Translated " + vtt)
+        except Exception as e :
+            print(f"Error on {vtt}: {e}")
+        progress_bar()
