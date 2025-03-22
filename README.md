@@ -94,6 +94,7 @@ This process will update all lessons in MongoDB with a new field `data_np` conta
 
 This process will iterate through MongoDB "activities" collection and filter for "ft" == "video". It will download each video file from the remote looma server, transcribe the video, then save a file in `data/content/video_captions/en/{fp}{fn}` Note that the "../" prefix will be removed from fp, and the fn extension will be changed to vtt. These generated captions must be manually uploaded to looma website.
 
+If a caption file is already on disk, the program will skip that video. To force a re-captioning, delete the caption file from disk. 
 ```bash
 make video-captions
 ```
@@ -101,6 +102,7 @@ make video-captions
 #### Translate Video Captions
 This process will iterate through all vtt files in the `data/content/video_captions/en` folder (and its subfolders, recursively), translate the caption track, and save it in the location found by replacing `en/` with `np/` in the path. These generated captions must be manually uploaded to looma website.
 
+If a translation is already on disk, the program will skip that translation. To force a re-translation, delete the nepali vtt file in `np/`. 
 ```bash
 make translate-captions
 ```
