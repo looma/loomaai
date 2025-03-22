@@ -89,16 +89,21 @@ make translate-lessons
 
 This process will update all lessons in MongoDB with a new field `data_np` containing translated lesson data. It will overwrite the existing `data_np` field if present.
 
-#### Translate Lessons
-* Requires an OpenAI key (see step 4 of Setup)
+#### Generate Video Captions
+* Requires ffmpeg
+
+This process will iterate through MongoDB "activities" collection and filter for "ft" == "video". It will download each video file from the remote looma server, transcribe the video, then save a file in `data/content/video_captions/en/{fp}{fn}` Note that the "../" prefix will be removed from fp, and the fn extension will be changed to vtt. These generated captions must be manually uploaded to looma website.
 
 ```bash
 make video-captions
 ```
 
-This process will iterate through MongoDB "activities" collection and filter for "ft" = "video". It will reference the field "fn" and download each mp4 from the remote looma server, transcribe the video, then save a file in `data/content/video_captions/` with the same filename as the video, but with the extension vtt. These generated captions must be manually uploaded to looma website.
+#### Translate Video Captions
+This process will iterate through all vtt files in the `data/content/video_captions/en` folder (and its subfolders, recursively), translate the caption track, and save it in the location found by replacing `en/` with `np/` in the path. These generated captions must be manually uploaded to looma website.
 
-
+```bash
+make translate-captions
+```
 ## More Developer Notes
 
 When importing a `common` library from `cli`, use a relative import: `from ..common.generate import generate_vectors`
