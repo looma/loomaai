@@ -20,8 +20,8 @@ def translate_one_lesson(db: Database, lesson, llm: ChatOpenAI):
         if data.get("ft") == "inline" and "html" in data:
             translated_html = prompt_text(llm,
                                           "Translate the following html to Nepali, preserving all formatting and html, only translating the visible text. Return only the html with no extra comments: {text}",
-                                          data["html"])
-            data["nepali"] = translated_html.removeprefix("```").removesuffix("```")
+                                          data["html"]).removeprefix("```").removesuffix("```")
+            data["nepali"] = translated_html
     db.lessons.update_one(
         {"_id": ObjectId(lesson["_id"])},
         {"$set": {"data": lesson_data,"translator":"AI","translated": datetime.now()}}
