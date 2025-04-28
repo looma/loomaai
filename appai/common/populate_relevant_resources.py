@@ -36,6 +36,14 @@ def populate_resources_for_chapter(vector_db: QdrantClient, mongo_db: Database, 
                         models.FieldCondition(key="ft",
                                               match=models.MatchValue(
                                                   value="chapter")),
+                    ],
+                    must=[
+                        models.FieldCondition(key="cl_lo",
+                                              range=models.Range(
+                                                  gte=chapter.payload["cl_official"],
+                                                  lte=chapter.payload["cl_official"]
+                                              )
+                                              )
                     ]
                 )
             ),
