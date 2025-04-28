@@ -10,7 +10,7 @@ class HtmlActivity(Activity):
     def url(self):
         return f"http://looma.website/{self.activity['fp']}{self.activity['fn']}"
 
-    def get_visible_text(self):
+    def get_text(self, mongo) -> str:
         try:
             # Fetch the HTML content from the URL
             response = requests.get(self.url())
@@ -27,11 +27,11 @@ class HtmlActivity(Activity):
 
         except requests.RequestException as e:
             print(f"Error fetching the URL: {e}")
-            return None
+            return ""
 
     def embed(self, mongo: Database, embeddings: HuggingFaceEmbeddings) -> list[float]:
 
-        text = self.get_visible_text()
+        text = self.get_text(mongo)
         return embeddings.embed_query(text)
 
     def payload(self) -> dict:

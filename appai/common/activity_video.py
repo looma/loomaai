@@ -14,10 +14,12 @@ class VideoActivity(Activity):
         fp = self.activity.get('fp', '../content/videos/').removeprefix("..")
         return output_dir + "en" + fp+os.path.splitext(fn)[0] + ".vtt"
 
-    def embed(self, mongo: Database, embeddings: HuggingFaceEmbeddings) -> list[float]:
-
+    def get_text(self, mongo: Database) -> str:
         with open(self.en_caption_path(), "r", encoding="utf-8") as file:
-            return embeddings.embed_query(file.read())
+            return file.read()
+
+    def embed(self, mongo: Database, embeddings: HuggingFaceEmbeddings) -> list[float]:
+            return embeddings.embed_query(self.get_text(mongo))
 
     def payload(self) -> dict:
         return {

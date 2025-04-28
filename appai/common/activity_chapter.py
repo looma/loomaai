@@ -30,17 +30,18 @@ def chapter_url_from_id(chapter_id: str, files_dir: str, textbook: dict | None, 
 
 
 class ChapterActivity(Activity):
-
-    def embed(self, mongo: Database, embeddings: HuggingFaceEmbeddings) -> list[float]:
+    def get_text(self, mongo: Database, ) -> str:
         # activity['ID'] is the chapter ID (not the activity objectid)
         _, filename_en, _, filename_np, _ = chapter_url_from_id(self.activity['ID'], files_dir='', textbook=None, mongo=mongo)
         if filename_en is not None:
             with open("data/files"+filename_en, "rb") as file:
                 pdf_stream = io.BytesIO(file.read())
-                text = extract_text_from_pdf(pdf_stream)
-                return embeddings.embed_query(text)
-        else:
-            raise Exception("Chapter is not english")
+                return extract_text_from_pdf(pdf_stream)
+
+        return ""
+
+    def embed(self, mongo: Database, embeddings: HuggingFaceEmbeddings) -> list[float]:
+        return embeddings.embed_query(self.get_text(mongo))
 
     def payload(self) -> dict:
         return {
