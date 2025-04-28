@@ -1,3 +1,5 @@
+import re
+
 from pymongo import MongoClient
 
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -21,7 +23,7 @@ from .summary import prompt_text
 def generate_vectors(mongo_client: MongoClient, vector_db: QdrantClient, missing_only: bool):
     db = mongo_client.get_database("looma")
     activities_collection = db.get_collection("activities")
-    activities = activities_collection.find({"ft": {"$in": ["chapter", "html", "pdf"]}})
+    activities = activities_collection.find({"ft": {"$in": ["chapter", "html", "pdf", "video"]}})
 
     model_name = "sentence-transformers/all-mpnet-base-v2"
     model_kwargs = {}
@@ -73,7 +75,7 @@ def process_activity(activity: Activity, hf: HuggingFaceEmbeddings, vector_db: Q
     text = activity.get_text(mongo=db)
     payload = activity.payload()
     if activity.cl_lo is None or activity.cl_hi is None:
-        detected_range = prompt_text(ChatOpenAI(),
+        detected_range = prompt_text(ChatOpenAI(base_url="https://ai.hackclub.com"),
                                  "You are a school teacher in Nepal deciding which grade level (1-12) this educational resource is appropriate for. Refer to nepalese educational standards in your decision. What is the minimum and maximum grade level (1-12) you would use this resource for? Return only two numerical numbers between 1 and 12, separated by a comma (min and max grade). No words or other characters. Here is the resource:  {text}",
                                  text).removeprefix("```").removesuffix("```")
         if detected_range:

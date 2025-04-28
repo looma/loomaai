@@ -30,6 +30,14 @@ def chapter_url_from_id(chapter_id: str, files_dir: str, textbook: dict | None, 
 
 
 class ChapterActivity(Activity):
+
+    def __init__(self, activity: dict):
+        super().__init__(activity)
+        groups = re.search(r"([1-9]|10|11|12)(EN|ENa|Sa|S|SF|Ma|M|SSa|SS|N|H|V|CS)[0-9]{2}(\.[0-9]{2})?",
+                           activity.get("ID"), re.IGNORECASE)
+        grade_level = groups[1]  # grade level
+        self.cl_official = int(grade_level)
+
     def get_text(self, mongo: Database, ) -> str:
         # activity['ID'] is the chapter ID (not the activity objectid)
         _, filename_en, _, filename_np, _ = chapter_url_from_id(self.activity['ID'], files_dir='', textbook=None, mongo=mongo)
@@ -44,10 +52,12 @@ class ChapterActivity(Activity):
         return embeddings.embed_query(self.get_text(mongo))
 
     def payload(self) -> dict:
+
         return {
             "collection": "activities",
             "source_id": str(self.activity['_id']),
             "title": self.activity['dn'],
             "ft": "chapter",
-            "chapter_id": self.activity['ID']
+            "chapter_id": self.activity['ID'],
+            "cl_official": self.cl_official,
         }
