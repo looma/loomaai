@@ -8,6 +8,9 @@ from pymongo.database import Database
 class Activity(ABC):
     def __init__(self, activity: dict):
         self.activity = activity
+        self.cl_lo = activity.get("cl_lo", None)
+        self.cl_hi = activity.get("cl_hi", None)
+        self.cl_official = activity.get("cl_official", None)
 
     @abstractmethod
     def embed(self, mongo: Database, embeddings: HuggingFaceEmbeddings) -> list[float]:
@@ -15,6 +18,10 @@ class Activity(ABC):
 
     @abstractmethod
     def payload(self) -> dict:
+        pass
+
+    @abstractmethod
+    def get_text(self, mongo: Database) -> str:
         pass
 
 

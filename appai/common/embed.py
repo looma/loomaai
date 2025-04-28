@@ -14,6 +14,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pymongo.database import Database
 
 from .activity_video import VideoActivity
+from langchain_openai import ChatOpenAI
+from .summary import prompt_text
 
 
 def generate_vectors(mongo_client: MongoClient, vector_db: QdrantClient, missing_only: bool):
@@ -30,7 +32,8 @@ def generate_vectors(mongo_client: MongoClient, vector_db: QdrantClient, missing
         encode_kwargs=encode_kwargs
     )
 
-    with alive_bar(activities_collection.count_documents({"ft": {"$in": ["chapter", "html", "pdf", "video"]}})) as progress_bar:
+    with alive_bar(activities_collection.count_documents(
+            {"ft": {"$in": ["chapter", "html", "pdf", "video"]}})) as progress_bar:
         # Use ThreadPoolExecutor to speed up the loop
         with ThreadPoolExecutor(max_workers=10) as executor:
             # Submit tasks to the pool
@@ -58,12 +61,30 @@ def generate_vectors(mongo_client: MongoClient, vector_db: QdrantClient, missing
                     print("[Error]", e, "Activity:", activity.activity["_id"])
                 progress_bar()
 
-def process_activity(activity: Activity, hf: HuggingFaceEmbeddings, vector_db: QdrantClient, db: Database, missing_only: bool):
-    if missing_only and len(vector_db.retrieve("activities", ids=[objectid_to_uuid(str(activity.activity['_id']))])) > 0:
+
+def process_activity(activity: Activity, hf: HuggingFaceEmbeddings, vector_db: QdrantClient, db: Database,
+                     missing_only: bool):
+    if missing_only and len(
+            vector_db.retrieve("activities", ids=[objectid_to_uuid(str(activity.activity['_id']))])) > 0:
         print(f"Skipping {activity.activity['_id']}")
         return
-    embeddings = activity.embed(mongo=db, embeddings=hf)
+
+    # get reading level from openai
+    text = activity.get_text(mongo=db)
     payload = activity.payload()
+    if activity.cl_lo is None or activity.cl_hi is None:
+        detected_range = prompt_text(ChatOpenAI(),
+                                 "You are a school teacher in Nepal deciding which grade level (1-12) this educational resource is appropriate for. Refer to nepalese educational standards in your decision. What is the minimum and maximum grade level (1-12) you would use this resource for? Return only two numerical numbers between 1 and 12, separated by a comma (min and max grade). No words or other characters. Here is the resource:  {text}",
+                                 text).removeprefix("```").removesuffix("```")
+        if detected_range:
+            cl_lo, cl_hi = map(int, detected_range.split(","))
+            payload["cl_lo"] = cl_lo
+            payload["cl_hi"] = cl_hi
+            db.get_collection("activities").update_one({"_id": activity.activity['_id']},
+                                                       {"$set": {"cl_lo": cl_lo, "cl_hi": cl_hi}})
+
+    embeddings = activity.embed(mongo=db, embeddings=hf)
+
     vector_db.upsert("activities", points=[
         models.PointStruct(
             id=objectid_to_uuid(str(activity.activity['_id'])),
@@ -71,6 +92,8 @@ def process_activity(activity: Activity, hf: HuggingFaceEmbeddings, vector_db: Q
             payload=payload
         ),
     ])
+
+
 
 def create_collection_if_not_exists(collection_name: str, client: QdrantClient):
     # Check if the collection exists
@@ -94,6 +117,7 @@ def create_collection_if_not_exists(collection_name: str, client: QdrantClient):
 
     print(f"Collection '{collection_name}' created successfully.")
 
+
 def objectid_to_uuid(objectid):
     """
     Convert a 24-character ObjectId (hexadecimal string) to a UUID format.
@@ -115,6 +139,7 @@ def objectid_to_uuid(objectid):
     uuid = f"{padded_objectid[0:8]}-{padded_objectid[8:12]}-{padded_objectid[12:16]}-{padded_objectid[16:20]}-{padded_objectid[20:32]}"
 
     return uuid
+
 
 def uuid_to_objectid(uuid):
     """
