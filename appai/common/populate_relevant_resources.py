@@ -56,7 +56,7 @@ def populate_resources_for_chapter(vector_db: QdrantClient, mongo_db: Database, 
         try:
             mongo_db.get_collection("activities").update_one(
                 {"_id": bson.ObjectId(activity.payload["source_id"])},
-                {"$addToSet": {"ch_id": chapter.payload["chapter_id"]}})
+                {"$addToSet": {"ai_ch_id": chapter.payload["chapter_id"]}})
             print(f"Updated relevant resources for chapter {chapter.payload['chapter_id']}")
         except Exception as e:
             print(f"Error updating activity {activity.payload['source_id']}: {e}")
