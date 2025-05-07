@@ -23,10 +23,10 @@ def split(client: MongoClient, files_dir: str, prefixes: list[str] | None):
     db = client.get_database("looma")
     if prefixes is None:
         # split all textbooks
-        progress = alive_bar(db.textbooks.count_documents({}))
-        for textbook in db.textbooks.find():
-            split_one(client, textbook, files_dir)
-            progress()
+        with alive_bar(db.textbooks.count_documents({})) as progress:
+            for textbook in db.textbooks.find():
+                split_one(client, textbook, files_dir)
+                progress()
         return
 
 
