@@ -51,6 +51,9 @@ shell:
 	@echo "Opening a shell in the loomaai container..."
 	@docker exec -it looma-streamlit /bin/bash
 
+split:
+	@$(setup_env) python3 -m appai.cli.split
+
 embed-all:
 	@$(setup_env) python3 -m appai.cli.embed
 
