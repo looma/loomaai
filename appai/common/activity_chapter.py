@@ -21,6 +21,8 @@ def chapter_url_from_id(chapter_id: str, files_dir: str, textbook: dict | None, 
     url_np = None
     local_path_np = None
     if textbook['fn'] != '':
+        # TODO: remote url_en and url_np are for the whole textbook. We should never embed the whole textbook in the context of a single chapter. Will need to upload final split to looma.website for this
+        # local path is correct (for the single chapter)
         url_en = f"https://looma.website/content/textbooks/{textbook['fp']}{textbook['fn']}"
         local_path_en = f"{files_dir}/{textbook["fp"]}{'en'}/{chapter_id}.pdf"
     if textbook['nfn'] != '':
