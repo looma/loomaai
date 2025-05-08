@@ -13,8 +13,15 @@ define setup_env
     export QDRANT_URL=http://localhost:46333; \
     export DATADIR=data; \
     . ./.env; \
-    source env/bin/activate;
+    . ./env/bin/activate;
 endef
+
+setup-host:
+	echo "export OPENAI_API_KEY=[your-api-key-here]" > .env
+	python3.12 -m venv env
+	. ./env/bin/activate
+	pip3 install -r requirements.txt
+
 
 build:
 	@echo "Building loomaai..."
@@ -29,7 +36,7 @@ update:
 run:
 	@echo "Make sure Looma-II docker compose is running first!"
 	@echo "Make sure your .env file is populated with the OpenAI api key"
-	. .env
+	. ./.env
 	@echo "Starting loomaai services..."
 	@docker-compose -f $(LOOMA_AI_DIR)/$(COMPOSE_FILE) up -d
 	@echo "loomaai is running."
