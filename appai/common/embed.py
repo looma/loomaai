@@ -37,7 +37,7 @@ def generate_vectors(mongo_client: MongoClient, vector_db: QdrantClient, missing
     with alive_bar(activities_collection.count_documents(
             {"ft": {"$in": ["chapter", "html", "pdf", "video"]}})) as progress_bar:
         # Use ThreadPoolExecutor to speed up the loop
-        with ThreadPoolExecutor(max_workers=10) as executor:
+        with ThreadPoolExecutor() as executor:
             # Submit tasks to the pool
             futures = {}
 
