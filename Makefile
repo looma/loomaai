@@ -64,16 +64,16 @@ split:
 embed-all:
 	@$(setup_env) python3 -m appai.cli.embed
 
+embed-missing:
+	@$(setup_env) python3 -m appai.cli.embed --missing-only
+
 translate-lessons:
 	@$(setup_env) python3 -m appai.cli.translate_lessons
 
 translate-missing-lessons:
 	@$(setup_env) python3 -m appai.cli.translate_lessons --missing-only
 
-embed-missing:
-	@$(setup_env) python3 -m appai.cli.embed --missing-only
-
-populate-mongo:
+assign-chapters-resources:
 	@$(setup_env) python3 -m appai.cli.populate_mongo
 
 video-captions:
