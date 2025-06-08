@@ -2,18 +2,17 @@
 
 ## Setup
 
-1. The Docker containers "loomaweb" and "loomadb" must be running when using "loomaai". Clone [Looma-II](https://github.com/looma/Looma-II) and follow the setup instructions in README for Looma-II repository
+1. The Docker containers for Looma-II named "loomaweb" and "loomadb" must be running when using "loomaai". Clone [Looma-II](https://github.com/looma/Looma-II) and follow the setup instructions in README for Looma-II repository
 2. Ensure the Looma-II docker-compose is running
-3. Clone this repo to your computer `git clone https://github.com/looma/loomaai`
+3. Clone this "loomaai" repo to your computer `git clone https://github.com/looma/loomaai`
 4. Obtain an OpenAI API key and add it to a new file in this directory called `.env` with the following contents:
 ```shell
 export OPENAI_API_KEY=[your-api-key-here]
 ```
-
 5. Run `make` (build the streamlit image) - this could take a few minutes 
 6. Run `make run` - (start qdrant and streamlit containers)
 7. Navigate to [http://localhost:47000/loomaai](http://localhost:47000/loomaai) to access the dashboard
-8. Create the `data/files/textbooks` folder within this folder, if it does not already exist
+8. Create the `loomaai/data/files/textbooks` folder within this folder, if it does not already exist
 
 
 ## User Guide
@@ -23,7 +22,7 @@ export OPENAI_API_KEY=[your-api-key-here]
 * In Streamlit
   * In Streamlit, click `Textbook` in the sidebar and select the textbooks you want.
   * Click the "Split Into Chapters" button. 
-  * A file location will be shown on-screen. That location is synced to the host machine, so the chapters will also be in `data/files/chapters` within this folder.
+  * A file location will be shown on-screen. That location is synced to the host machine, so the chapters will also be in `data/files/textbooks` within the loomaai folder.
 
 #### Chapter Summaries
 
@@ -32,6 +31,11 @@ export OPENAI_API_KEY=[your-api-key-here]
   * Select the chapter to be summarized from your file explorer.
   * Make sure the language selected in the options is the language the chapter is in.
   * Click the Summarize button.
+* other functions available
+  * summary - creates a file 'ch_id.summary' in the data/files folders for selected chapters
+  * quiz - creates a file 'ch_id.quiz' in the data/files folders for selected chapters
+  * custom prompt -enter a prompt and a file extension [e.g. 'outline'] to create 'ch_id.extension' files based on the prompt
+  * dictionary - scan selected chapters, extract all [english] words and add them to the dictionary if not present
 
 ## Developer Guide
 
@@ -80,7 +84,7 @@ make populate-mongo
 * This process will populate the "related resources" for every chapter in [Looma-II](https://github.com/looma/Looma-II)
 * This process is additive and will not overwrite any existing related resources in MongoDB, it will also not add duplicate relations
 
-#### Translate Lessons
+#### Translate Lessons [also available in Streamlit interface (above)]
 * Requires an OpenAI key (see step 4 of Setup)
 
 ```bash
