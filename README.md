@@ -51,17 +51,12 @@ export OPENAI_API_KEY=[your-api-key-here]
 ### **YOU MUST USE PYTHON 3.12, NOT PYTHON 3.13**.
 This is because pytorch does not support python3.13
 
-Set up your virtual environment:
-```bash
+ Run `make setup-host` to Set up your virtual environment. 
+ It does:
 	python3.12 -m venv env
 	source env/bin/activate
-```
-
-#### 2. install required python libraries
-
-```bash
 	pip3 install -r requirements.txt
-```
+
 
 ### Features:
 
