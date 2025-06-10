@@ -33,7 +33,7 @@ export OPENAI_API_KEY=[your-api-key-here]
   * Make sure the language selected in the options is the language the chapter is in.
   * Click the Summarize button.
     
-#### Other chapter functions available
+#### Other chapter functions available in StreamLit
 
   * summary - creates a file 'ch_id.summary' in the data/files folders for selected chapters
   * quiz - creates a file 'ch_id.quiz' in the data/files folders for selected chapters
@@ -55,10 +55,12 @@ This is because pytorch does not support python3.13
 
  Run `make setup-host` to Set up your virtual environment. 
  It does:
+ 
+```bash
 	python3.12 -m venv env
 	source env/bin/activate
 	pip3 install -r requirements.txt
-
+```	
 
 ### Features:
 
