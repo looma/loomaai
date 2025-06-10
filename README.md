@@ -32,7 +32,9 @@ export OPENAI_API_KEY=[your-api-key-here]
   * Select the chapter to be summarized from your file explorer.
   * Make sure the language selected in the options is the language the chapter is in.
   * Click the Summarize button.
-* other functions available
+    
+#### Other chapter functions available
+
   * summary - creates a file 'ch_id.summary' in the data/files folders for selected chapters
   * quiz - creates a file 'ch_id.quiz' in the data/files folders for selected chapters
   * custom prompt -enter a prompt and a file extension [e.g. 'outline'] to create 'ch_id.extension' files based on the prompt
