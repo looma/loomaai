@@ -38,6 +38,14 @@ export OPENAI_API_KEY=[your-api-key-here]
   * custom prompt -enter a prompt and a file extension [e.g. 'outline'] to create 'ch_id.extension' files based on the prompt
   * dictionary - scan selected chapters, extract all [english] words and add them to the dictionary if not present
 
+#### Translating Lessons
+
+* In StreamLit
+  * Lessons are displayed, marked with "AI" and date translated if translated
+  * Select lessons to be translated
+  * scans the "data" field of each lesson
+  * extracts the "html" fields of all "inline" text elements, translates them to Nepali, and inserts a "nepali" field next to the "html" field
+
 ## Developer Guide
 
 ### **YOU MUST USE PYTHON 3.12, NOT PYTHON 3.13**.
