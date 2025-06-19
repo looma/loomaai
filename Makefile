@@ -20,7 +20,7 @@ setup-host:
 	echo "export OPENAI_API_KEY=[your-api-key-here]" > .env
 	python3.12 -m venv env
 	. ./env/bin/activate
-	pip3 install -r requirements.txt
+	uv pip install -r requirements.txt
 
 
 build:
