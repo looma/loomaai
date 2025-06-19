@@ -6,10 +6,12 @@ import logging
 from common.translate_lessons import translate_one_lesson
 from common.streamlit_mongo_viewer import mongodb_viewer
 from pymongo import MongoClient
-from langchain_openai import ChatOpenAI
+
+from common.llmselect import LLMSelect
 # Qdrant server configuration
 
 COLLECTION_NAME = "lessons"
+
 
 # Streamlit App
 def main():
@@ -24,10 +26,9 @@ def main():
         collection_name="lessons",
         filters=FILTERS,
         columns=["dn", "ndn", "translator", "translated", "data"],
-        hidden_columns=["data"]
+        hidden_columns=["data"],
     )
-    openai_api_key = os.getenv("OPENAI_API_KEY")
-    llm = ChatOpenAI(temperature=0, model_name="gpt-4o-mini", api_key=openai_api_key)
+    llm = LLMSelect().llm()
 
     # (translate_tab) = st.tabs(['Translate'])
 
@@ -40,10 +41,13 @@ def main():
             with st.spinner("Translating..."):
                 client = MongoClient(MONGO_URI)
                 for lesson in selected:
-                    translate_one_lesson(client.get_database(DATABASE_NAME), lesson, llm)
+                    translate_one_lesson(
+                        client.get_database(DATABASE_NAME), lesson, llm
+                    )
             st.success(f"Translated {len(selected)} lessons")
         except Exception as exception:
             st.error(f"Error in translation: {exception}")
+
 
 if __name__ == "__main__":
     try:
