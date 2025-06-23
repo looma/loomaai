@@ -33,8 +33,9 @@ def main():
 
     # with translate_tab:
     st.markdown("""
-    If a lesson is already translated, the existing translation will be overwritten. Iterates through all lessons in MongoDB
-    finds inline text elements and creates a field `data.nepali` which is the translation of `data.html`.
+    If a lesson is has a "translated" field, the lesson will not be translated. 
+    Iterates through all lessons in MongoDB finds inline text elements 
+    and creates a field `data.nepali` which is the translation of `data.html`.
     """)
     if st.button("Translate"):
         try:
