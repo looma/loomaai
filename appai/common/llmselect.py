@@ -51,11 +51,8 @@ class LLMSelect:
         self.selected_llm = None
 
     def llm(self):
-        if self.selected_llm is None:
-            raise ValueError(
-                "No LLM has been selected. Please call select_llm() first."
-            )
-        return self.selected_llm
+        llm = self.select_llm(temperature=0.0)
+        return llm
 
     def select_llm(self, temperature=0.0):
         llm_preferred = os.getenv("LLM_PREFERRED")

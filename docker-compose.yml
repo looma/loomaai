@@ -9,10 +9,15 @@ services:
     # image: ghcr.io/looma/loomadb:latest
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY} # from host environment
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY} # from host environment
       - QDRANT_URL=http://looma-qdrant:6333
       - MONGO_URI=mongodb://looma-db:27017
       - MONGO_DB=looma
       - DATADIR=/app/data/files
+      - OLLAMA_URL=http://looma-ollama:11434
+      - LLM_PREFERRED=Ollama # or openai
+      - LLM_MODEL=llama3.2:3b
+       # or gpt-4
     image: loomaai:latest
     container_name: looma-streamlit
     ports:
@@ -24,7 +29,17 @@ services:
     tty: true
     networks:
       - loomanet
-
+  looma-ollama:
+    image: ollama/ollama:latest
+    container_name: looma-ollama
+    ports:
+      - 11434:11434
+    restart: always
+    tty: true
+    volumes:
+      - ./data/ollama:/root/.ollama
+    networks:
+      - loomanet
   looma-qdrant:
     # image: ghcr.io/looma/loomadb:latest
     image: qdrant/qdrant:latest
