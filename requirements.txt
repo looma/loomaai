@@ -5,6 +5,7 @@ langchain-core==0.3.65
 langchain-google-genai==2.1.5
 langchain-huggingface==0.3.0
 langchain-ollama==0.3.3
+ollama==0.4.3
 langchain-openai==0.3.24
 bs4==0.0.2
 PyMuPDF==1.24.13
@@ -14,5 +15,5 @@ nltk==3.9.1
 sentence_transformers==3.3.1
 alive-progress==3.2.0
 streamlit==1.41.1
-#openai-whisper==20240930
+openai-whisper==20240930
 deep-translator==1.11.4

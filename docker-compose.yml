@@ -17,7 +17,6 @@ services:
       - OLLAMA_URL=http://looma-ollama:11434
       - LLM_PREFERRED=Ollama # or openai
       - LLM_MODEL=llama3.2:3b
-       # or gpt-4
     image: loomaai:latest
     container_name: looma-streamlit
     ports:
