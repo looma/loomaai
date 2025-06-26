@@ -1,7 +1,10 @@
 import os
 from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_ollama import ChatOllama
+from langchain_ollama import ChatOllama, OllamaLLM
+
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import ChatPromptTemplate
 
 class LLMInfo:
     def __init__(self):
@@ -54,14 +57,26 @@ class LLMSelect:
         llm = self.select_llm(temperature=0.0)
         return llm
 
-    def select_llm(self, temperature=0.0):
+    def llm_namemodel(self):
         llm_preferred = os.getenv("LLM_PREFERRED")
-        llm_model = os.getenv("LLM_MODEL")
         if llm_preferred not in self.llm_list:
             raise ValueError(
                 f"LLM {llm_preferred} is not in the list of available LLMs: {self.llm_list}"
             )
-        if llm_model is not None:
+        llm_model = os.getenv("LLM_MODEL")
+        if llm_model is None:
+            llm_model = LLMInfo().get_default_model(llm_preferred)
+        return llm_preferred,llm_model
+
+    def select_llm(self, temperature=0.0):
+        llm_preferred = os.getenv("LLM_PREFERRED")
+        llm_model = os.getenv("LLM_MODEL")
+        print(f"LLM_PREFERRED: {llm_preferred}, LLM_MODEL: {llm_model}")
+        if llm_preferred not in self.llm_list:
+            raise ValueError(
+                f"LLM {llm_preferred} is not in the list of available LLMs: {self.llm_list}"
+            )
+        if llm_model is None:
             llm_model = LLMInfo().get_default_model(llm_preferred)
 
         # let's check keys
@@ -83,7 +98,6 @@ class LLMSelect:
 
                 openai_api_key = os.getenv("OPENAI_API_KEY")
                 self.selected_llm = ChatOpenAI(
-                    temperature=temperature,
                     model_name=llm_model,
                     api_key=openai_api_key,
                 )
@@ -92,16 +106,26 @@ class LLMSelect:
 
                 google_api_key = os.getenv("GOOGLE_API_KEY")
                 self.selected_llm = ChatGoogleGemini(
-                    temperature=temperature,
                     model_name=llm_model,
                     api_key=google_api_key,
                 )
             case "Ollama":
                 from langchain_ollama import ChatOllama
-
                 ollama_url = os.getenv("OLLAMA_URL")
+                '''
                 self.selected_llm = ChatOllama(
-                    temperature=temperature, model_name=llm_model, base_url=ollama_url
+                    model_name=llm_model,
+                    base_url=ollama_url,
+                    temperature=0,
+                    num_ctx=32000,
+                    num_predict=2048
+                )
+                '''
+                self.selected_llm = OllamaLLM(
+                    model=llm_model,
+                    base_url=ollama_url,
+                    format='',
+                    verbose=True
                 )
             case _:
                 raise ValueError(
