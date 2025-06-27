@@ -28,6 +28,12 @@ build:
 	@docker build -t loomaai -f Dockerfile .
 	@echo "Build complete."
 
+rmi:
+	@echo "Removing loomaai image..."
+	@docker rmi loomaai
+	@docker system prune -f
+	@echo "Image removed."
+
 update:
 	@echo "Updating loomaai..."
 	@git -C $(LOOMA_AI_DIR) pull
