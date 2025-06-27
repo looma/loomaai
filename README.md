@@ -10,8 +10,8 @@
 export OPENAI_API_KEY=[your-api-key-here]
 ```
 5. Run `make` (build the streamlit image) - this could take a few minutes 
-6. Run `make setup-host` - (start python env, import openai key, load py requirements)
-7. Run `make run` - (start qdrant and streamlit containers)
+6. Run `make setup-host` (start python env, import openai key, load py requirements)
+7. Run `make run` (start qdrant and streamlit containers)
 8. Navigate to [http://localhost:47000/loomaai](http://localhost:47000/loomaai) to access the dashboard
 9. Create the `loomaai/data/files/textbooks` folder within this folder, if it does not already exist
 
