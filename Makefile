@@ -20,7 +20,7 @@ setup-host:
 	echo "export OPENAI_API_KEY=[your-api-key-here]" > .env
 	python3.12 -m venv env
 	. ./env/bin/activate
-	pip3 install -r requirements.txt
+	uv pip install -r requirements.txt
 
 
 build:
@@ -60,6 +60,11 @@ shell:
 
 split:
 	@$(setup_env) python3 -m appai.cli.split
+
+
+pull_model:
+	@echo "Pulling the latest model...for llama3.2:3b"
+	@docker exec -ti looma-ollama /usr/bin/ollama pull llama3.2:3b
 
 embed-all:
 	@$(setup_env) python3 -m appai.cli.embed

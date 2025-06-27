@@ -1,5 +1,3 @@
-import re
-
 from pymongo import MongoClient
 
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -16,26 +14,31 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pymongo.database import Database
 
 from .activity_video import VideoActivity
-from langchain_openai import ChatOpenAI
+from .llmselect import LLMSelect
 from .summary import prompt_text
 
 
-def generate_vectors(mongo_client: MongoClient, vector_db: QdrantClient, missing_only: bool):
+def generate_vectors(
+    mongo_client: MongoClient, vector_db: QdrantClient, missing_only: bool
+):
     db = mongo_client.get_database("looma")
     activities_collection = db.get_collection("activities")
-    activities = activities_collection.find({"ft": {"$in": ["chapter", "html", "pdf", "video"]}})
+    activities = activities_collection.find(
+        {"ft": {"$in": ["chapter", "html", "pdf", "video"]}}
+    )
 
     model_name = "sentence-transformers/all-mpnet-base-v2"
     model_kwargs = {}
-    encode_kwargs = {'normalize_embeddings': False}
+    encode_kwargs = {"normalize_embeddings": False}
     hf = HuggingFaceEmbeddings(
-        model_name=model_name,
-        model_kwargs=model_kwargs,
-        encode_kwargs=encode_kwargs
+        model_name=model_name, model_kwargs=model_kwargs, encode_kwargs=encode_kwargs
     )
 
-    with alive_bar(activities_collection.count_documents(
-            {"ft": {"$in": ["chapter", "html", "pdf", "video"]}})) as progress_bar:
+    with alive_bar(
+        activities_collection.count_documents(
+            {"ft": {"$in": ["chapter", "html", "pdf", "video"]}}
+        )
+    ) as progress_bar:
         # Use ThreadPoolExecutor to speed up the loop
         with ThreadPoolExecutor() as executor:
             # Submit tasks to the pool
@@ -51,23 +54,39 @@ def generate_vectors(mongo_client: MongoClient, vector_db: QdrantClient, missing
                     ac = ChapterActivity(activity)
                 if activity["ft"] == "video":
                     ac = VideoActivity(activity)
-                futures[executor.submit(process_activity, ac, hf, vector_db, db, missing_only)] = ac
+                futures[
+                    executor.submit(
+                        process_activity, ac, hf, vector_db, db, missing_only
+                    )
+                ] = ac
 
             # Ensure all futures complete and get the result (if needed)
             for future in as_completed(futures):
                 activity = futures[future]
                 try:
                     future.result()  # Get the result if needed, or handle any exceptions
-                    print(f"[Success]", activity.activity['_id'])
+                    print("[Success]", activity.activity["_id"])
                 except Exception as e:
                     print("[Error]", e, "Activity:", activity.activity["_id"])
                 progress_bar()
 
 
-def process_activity(activity: Activity, hf: HuggingFaceEmbeddings, vector_db: QdrantClient, db: Database,
-                     missing_only: bool):
-    if missing_only and len(
-            vector_db.retrieve("activities", ids=[objectid_to_uuid(str(activity.activity['_id']))])) > 0:
+def process_activity(
+    activity: Activity,
+    hf: HuggingFaceEmbeddings,
+    vector_db: QdrantClient,
+    db: Database,
+    missing_only: bool,
+):
+    if (
+        missing_only
+        and len(
+            vector_db.retrieve(
+                "activities", ids=[objectid_to_uuid(str(activity.activity["_id"]))]
+            )
+        )
+        > 0
+    ):
         print(f"Skipping {activity.activity['_id']}")
         return
 
@@ -75,26 +94,39 @@ def process_activity(activity: Activity, hf: HuggingFaceEmbeddings, vector_db: Q
     text = activity.get_text(mongo=db)
     payload = activity.payload()
     if activity.cl_lo is None or activity.cl_hi is None:
-        detected_range = prompt_text(ChatOpenAI(),
-                                 "You are a school teacher in Nepal deciding which grade level (1-12) this educational resource is appropriate for. Refer to nepalese educational standards in your decision. What is the minimum and maximum grade level (1-12) you would use this resource for? Return only two numerical numbers between 1 and 12, separated by a comma (min and max grade). No words or other characters. Here is the resource:  {text}",
-                                 text).removeprefix("```").removesuffix("```")
+        detected_range = (
+            prompt_text(
+                LLMSelect().llm(),
+                "You are a school teacher in Nepal deciding which grade level (1-12) this educational resource is appropriate for. Refer to nepalese educational standards in your decision. What is the minimum and maximum grade level (1-12) you would use this resource for? Return only two numerical numbers between 1 and 12, separated by a comma (min and max grade). No words or other characters. Here is the resource:  {text}",
+                text,
+            )
+            .removeprefix("```")
+            .removesuffix("```")
+        )
         if detected_range:
             cl_lo, cl_hi = map(int, detected_range.split(","))
             payload["cl_lo"] = cl_lo
             payload["cl_hi"] = cl_hi
-            db.get_collection("activities").update_one({"_id": activity.activity['_id']},
-                                                       {"$set": {"cl_lo": cl_lo, "cl_hi": cl_hi}})
+            db.get_collection("activities").update_one(
+                {"_id": activity.activity["_id"]},
+                {"$set": {"cl_lo": cl_lo, "cl_hi": cl_hi}},
+            )
 
     embeddings = activity.embed(mongo=db, embeddings=hf)
 
-    vector_db.upsert("activities", points=[
-        models.PointStruct(
-            id=objectid_to_uuid(str(activity.activity['_id'])),
-            vector={"text-body": embeddings, "text-title": hf.embed_query(activity.activity.get('dn', ''))},
-            payload=payload
-        ),
-    ])
-
+    vector_db.upsert(
+        "activities",
+        points=[
+            models.PointStruct(
+                id=objectid_to_uuid(str(activity.activity["_id"])),
+                vector={
+                    "text-body": embeddings,
+                    "text-title": hf.embed_query(activity.activity.get("dn", "")),
+                },
+                payload=payload,
+            ),
+        ],
+    )
 
 
 def create_collection_if_not_exists(collection_name: str, client: QdrantClient):
@@ -108,13 +140,16 @@ def create_collection_if_not_exists(collection_name: str, client: QdrantClient):
     # Create the collection
     client.create_collection(
         collection_name=collection_name,
-        vectors_config={"text-body": models.VectorParams(
-            size=768,  # OpenAI Embeddings
-            distance=models.Distance.COSINE,
-        ), "text-title": models.VectorParams(
-            size=768,  # OpenAI Embeddings
-            distance=models.Distance.COSINE,
-        )},
+        vectors_config={
+            "text-body": models.VectorParams(
+                size=768,  # OpenAI Embeddings
+                distance=models.Distance.COSINE,
+            ),
+            "text-title": models.VectorParams(
+                size=768,  # OpenAI Embeddings
+                distance=models.Distance.COSINE,
+            ),
+        },
     )
 
     print(f"Collection '{collection_name}' created successfully.")
@@ -135,7 +170,7 @@ def objectid_to_uuid(objectid):
         raise ValueError("ObjectId must be a 24-character hexadecimal string.")
 
     # Pad the ObjectId to 32 characters (for UUID format)
-    padded_objectid = objectid.ljust(32, '0')
+    padded_objectid = objectid.ljust(32, "0")
 
     # Format the padded ObjectId into UUID format
     uuid = f"{padded_objectid[0:8]}-{padded_objectid[8:12]}-{padded_objectid[12:16]}-{padded_objectid[16:20]}-{padded_objectid[20:32]}"
@@ -154,16 +189,24 @@ def uuid_to_objectid(uuid):
     - str: A 24-character hexadecimal string (ObjectId).
     """
     # Validate the UUID format
-    if len(uuid) != 36 or uuid[8] != '-' or uuid[13] != '-' or uuid[18] != '-' or uuid[23] != '-':
-        raise ValueError("Invalid UUID format. Expected format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.")
+    if (
+        len(uuid) != 36
+        or uuid[8] != "-"
+        or uuid[13] != "-"
+        or uuid[18] != "-"
+        or uuid[23] != "-"
+    ):
+        raise ValueError(
+            "Invalid UUID format. Expected format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx."
+        )
 
     # Remove dashes from the UUID
-    objectid = uuid.replace('-', '')
+    objectid = uuid.replace("-", "")
 
     # Ensure the ObjectId is exactly 24 characters long
     if len(objectid) > 24:
         objectid = objectid[:24]  # Truncate to 24 characters
     elif len(objectid) < 24:
-        objectid = objectid.ljust(24, '0')  # Pad with zeros if necessary
+        objectid = objectid.ljust(24, "0")  # Pad with zeros if necessary
 
     return objectid
