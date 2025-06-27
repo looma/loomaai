@@ -1,3 +1,4 @@
+llvmlite
 qdrant-client==1.12.1
 pymongo==4.10.1
 langchain==0.3.25
@@ -5,7 +6,7 @@ langchain-core==0.3.65
 langchain-google-genai==2.1.5
 langchain-huggingface==0.3.0
 langchain-ollama==0.3.3
-ollama==0.4.3
+ollama
 langchain-openai==0.3.24
 bs4==0.0.2
 PyMuPDF==1.24.13

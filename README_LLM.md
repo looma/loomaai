@@ -3,6 +3,7 @@
 This module provides a unified interface for selecting and initializing Large Language Model (LLM) providers and their models in your project. It supports OpenAI, Google Gemini, and Ollama LLMs, allowing you to easily switch between providers and models using environment variables.
 
 ## Features
+
 - **Provider Abstraction:** Easily select between OpenAI, Google Gemini, and Ollama LLMs.
 - **Model Management:** Lists available models for each provider and allows setting default models.
 - **Environment Variable Configuration:** Select provider and model via environment variables (`LLM_PREFERRED`, `LLM_MODEL`).
@@ -12,6 +13,7 @@ This module provides a unified interface for selecting and initializing Large La
 ## Usage
 
 ### 1. Set Environment Variables
+
 Set the following environment variables before running your application:
 
 - `LLM_PREFERRED`: The LLM provider to use (`OpenAI`, `Google`, or `Ollama`).
@@ -22,13 +24,37 @@ Set the following environment variables before running your application:
   - For Ollama: `OLLAMA_URL`
 
 Example (bash):
+
 ```bash
 export LLM_PREFERRED=OpenAI
 export LLM_MODEL=gpt-4o
 export OPENAI_API_KEY=your_openai_key_here
 ```
 
-### 2. Using the Module
+### 2. Using `docker-compose.yml`
+
+In the section where `looma-streamlit` has its environment valirables defined, 
+you need the following environment variables:
+
+For `OpenAI`
+```yaml
+environment:
+  - LLM_PREFERRED=OpenAI
+  - LLM_MODEL=gpt-4o
+  - OPENAI_API_KEY=${OPENAI_API_KEY}
+```
+
+For `Ollama`
+```yaml
+environment:
+  - LLM_PREFERRED=Ollama
+  - LLM_MODEL=llama3.2:3b
+  - OLLAMA_URL=http://looma-ollama:11434
+```
+
+
+### 3. Using the Module
+
 Import and use the `LLMSelect` class to get your LLM instance:
 
 ```python
@@ -42,6 +68,7 @@ llm = llm_selector.select_llm(temperature=0.7)
 ## Classes
 
 ### `LLMInfo`
+
 - Manages available models and default models for each provider.
 - Methods:
   - `get_model_list(provider)`
@@ -49,6 +76,7 @@ llm = llm_selector.select_llm(temperature=0.7)
   - `get_default_model(provider)`
 
 ### `LLMSelect`
+
 - Handles provider selection and LLM instantiation.
 - Methods:
   - `select_llm(temperature=0.0)`: Returns the selected LLM instance.
@@ -63,9 +91,11 @@ llm = llm_selector.select_llm(temperature=0.7)
 | Ollama   | mistral, llama3.2:3b, deepseek-r1:8b |
 
 ## Error Handling
+
 - Raises `ValueError` if required environment variables are missing or if an unsupported provider/model is selected.
 
 ## Dependencies
+
 - [langchain_openai](https://python.langchain.com/docs/integrations/llms/openai)
 - [langchain_google_genai](https://python.langchain.com/docs/integrations/llms/google_genai)
 - [langchain_ollama](https://python.langchain.com/docs/integrations/llms/ollama)
