@@ -87,7 +87,7 @@ make embed-missing
 * Follow the steps in "Run Containers" and "Embed All Activities" first
 
 ```bash
-make populate-mongo
+make assign-chapters-resources
 ```
 * This process will populate the "related resources" for every chapter in [Looma-II](https://github.com/looma/Looma-II)
 * This process is additive and will not overwrite any existing related resources in MongoDB, it will also not add duplicate relations
