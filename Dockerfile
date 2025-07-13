@@ -9,7 +9,7 @@ RUN apt install -y vim bash git net-tools curl
 
 COPY requirements.txt /app/requirements.txt
 RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
+RUN pip install -r requirements.txt --resume-retries 2
 
 COPY bootup.sh /app/bootup.sh
 
