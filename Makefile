@@ -17,11 +17,9 @@ define setup_env
 endef
 
 setup-host:
-	echo "export OPENAI_API_KEY=[your-api-key-here]" > .env
-	python3.12 -m venv env
-	. ./env/bin/activate
-	pip3 install -r requirements.txt
-
+	@echo "export OPENAI_API_KEY=[your-api-key-here]" > .env
+	@python3.12 -m venv env
+	@. ./env/bin/activate; pip3 install -r requirements.txt
 
 build:
 	@echo "Building loomaai..."
