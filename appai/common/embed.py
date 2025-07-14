@@ -74,6 +74,8 @@ def process_activity(activity: Activity, hf: HuggingFaceEmbeddings, vector_db: Q
     payload = activity.payload()
     try:
         if activity.cl_lo is None or activity.cl_hi is None:
+            payload["cl_lo"] = 0
+            payload["cl_hi"] = 13
             r = Readability(text)
             fk = r.flesch_kincaid()
             # detected_range = prompt_text(ChatOpenAI(),
