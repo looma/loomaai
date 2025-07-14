@@ -19,7 +19,11 @@ endef
 setup-host:
 	@echo "export OPENAI_API_KEY=[your-api-key-here]" > .env
 	@python3.12 -m venv env
-	@. ./env/bin/activate; pip3 install -r requirements.txt
+	@. ./env/bin/activate; \
+	pip3 install -r requirements.txt; \
+    python -m nltk.downloader punkt \
+	python -m nltk.downloader punkt_tab;
+
 
 build:
 	@echo "Building loomaai..."

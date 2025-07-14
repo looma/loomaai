@@ -44,7 +44,7 @@ class ChapterActivity(Activity):
         # activity['ID'] is the chapter ID (not the activity objectid)
         _, filename_en, _, filename_np, _ = chapter_url_from_id(self.activity['ID'], files_dir='', textbook=None, mongo=mongo)
         if filename_en is not None:
-            with open("data/files"+filename_en, "rb") as file:
+            with open("data"+filename_en, "rb") as file:
                 pdf_stream = io.BytesIO(file.read())
                 return extract_text_from_pdf(pdf_stream)
 

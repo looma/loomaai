@@ -16,14 +16,13 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pymongo.database import Database
 
 from .activity_video import VideoActivity
-from langchain_openai import ChatOpenAI
-from .summary import prompt_text
+from readability import Readability
 
 
 def generate_vectors(mongo_client: MongoClient, vector_db: QdrantClient, missing_only: bool):
     db = mongo_client.get_database("looma")
     activities_collection = db.get_collection("activities")
-    activities = activities_collection.find({"ft": {"$in": ["chapter", "html", "pdf", "video"]}})
+    activities = activities_collection.find({"ft": {"$in": ["chapter", ]}})
 
     model_name = "sentence-transformers/all-mpnet-base-v2"
     model_kwargs = {}
@@ -71,15 +70,20 @@ def process_activity(activity: Activity, hf: HuggingFaceEmbeddings, vector_db: Q
         print(f"Skipping {activity.activity['_id']}")
         return
 
-    # get reading level from openai
     text = activity.get_text(mongo=db)
     payload = activity.payload()
     if activity.cl_lo is None or activity.cl_hi is None:
-        detected_range = prompt_text(ChatOpenAI(),
-                                 "You are a school teacher in Nepal deciding which grade level (1-12) this educational resource is appropriate for. Refer to nepalese educational standards in your decision. What is the minimum and maximum grade level (1-12) you would use this resource for? Return only two numerical numbers between 1 and 12, separated by a comma (min and max grade). No words or other characters. Here is the resource:  {text}",
-                                 text).removeprefix("```").removesuffix("```")
-        if detected_range:
-            cl_lo, cl_hi = map(int, detected_range.split(","))
+        r = Readability(text)
+        fk = r.flesch_kincaid()
+        print("C", fk.grade_level, activity.cl_official)
+        # detected_range = prompt_text(ChatOpenAI(),
+        #                          "You are a school teacher in Nepal deciding which grade level (1-12) this educational resource is appropriate for. Refer to nepalese educational standards in your decision. What is the minimum and maximum grade level (1-12) you would use this resource for? Return only two numerical numbers between 1 and 12, separated by a comma (min and max grade). No words or other characters. Here is the resource:  {text}",
+        #                          text).removeprefix("```").removesuffix("```")
+
+        if fk.grade_level:
+            cl_lo = int(fk.grade_level) - 1
+            cl_hi = int(fk.grade_level) + 5
+            # cl_lo, cl_hi = map(int, detected_range.split(","))
             payload["cl_lo"] = cl_lo
             payload["cl_hi"] = cl_hi
             db.get_collection("activities").update_one({"_id": activity.activity['_id']},

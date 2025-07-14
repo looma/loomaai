@@ -66,7 +66,14 @@ This is because pytorch does not support python3.13
 
 #### Embed All Activities
 
-This requires  docker-compose to be running (see "Setup")
+This requires  docker-compose to be running (see "Setup"). Also you must run the following first BEFORE embedding:
+
+```bash
+sudo make split
+sudo make video-captions
+```
+
+sudo may be required because of a permissions quirk with `data` being mounted as a docker volume.
 
 ```bash
 make embed-all
