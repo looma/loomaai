@@ -72,22 +72,24 @@ def process_activity(activity: Activity, hf: HuggingFaceEmbeddings, vector_db: Q
 
     text = activity.get_text(mongo=db)
     payload = activity.payload()
-    if activity.cl_lo is None or activity.cl_hi is None:
-        r = Readability(text)
-        fk = r.flesch_kincaid()
-        print("C", fk.grade_level, activity.cl_official)
-        # detected_range = prompt_text(ChatOpenAI(),
-        #                          "You are a school teacher in Nepal deciding which grade level (1-12) this educational resource is appropriate for. Refer to nepalese educational standards in your decision. What is the minimum and maximum grade level (1-12) you would use this resource for? Return only two numerical numbers between 1 and 12, separated by a comma (min and max grade). No words or other characters. Here is the resource:  {text}",
-        #                          text).removeprefix("```").removesuffix("```")
+    try:
+        if activity.cl_lo is None or activity.cl_hi is None:
+            r = Readability(text)
+            fk = r.flesch_kincaid()
+            # detected_range = prompt_text(ChatOpenAI(),
+            #                          "You are a school teacher in Nepal deciding which grade level (1-12) this educational resource is appropriate for. Refer to nepalese educational standards in your decision. What is the minimum and maximum grade level (1-12) you would use this resource for? Return only two numerical numbers between 1 and 12, separated by a comma (min and max grade). No words or other characters. Here is the resource:  {text}",
+            #                          text).removeprefix("```").removesuffix("```")
 
-        if fk.grade_level:
-            cl_lo = int(fk.grade_level) - 1
-            cl_hi = int(fk.grade_level) + 5
-            # cl_lo, cl_hi = map(int, detected_range.split(","))
-            payload["cl_lo"] = cl_lo
-            payload["cl_hi"] = cl_hi
-            db.get_collection("activities").update_one({"_id": activity.activity['_id']},
-                                                       {"$set": {"cl_lo": cl_lo, "cl_hi": cl_hi}})
+            if fk.grade_level:
+                cl_lo = int(fk.grade_level) - 1
+                cl_hi = int(fk.grade_level) + 5
+                # cl_lo, cl_hi = map(int, detected_range.split(","))
+                payload["cl_lo"] = cl_lo
+                payload["cl_hi"] = cl_hi
+                db.get_collection("activities").update_one({"_id": activity.activity['_id']},
+                                                           {"$set": {"cl_lo": cl_lo, "cl_hi": cl_hi}})
+    except Exception as e:
+        print(f"Error determining grade level for activity {activity.activity['_id']}: {e}")
 
     embeddings = activity.embed(mongo=db, embeddings=hf)
 
