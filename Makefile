@@ -17,11 +17,9 @@ define setup_env
 endef
 
 setup-host:
-	echo "export OPENAI_API_KEY=[your-api-key-here]" > .env
-	python3.12 -m venv env
-	. ./env/bin/activate
-	uv pip install -r requirements.txt
-
+	@echo "export OPENAI_API_KEY=[your-api-key-here]" > .env
+	@python3.12 -m venv env
+	@. ./env/bin/activate; pip3 install -r requirements.txt
 
 build:
 	@echo "Building loomaai..."
@@ -44,7 +42,7 @@ run:
 	@echo "Make sure your .env file is populated with the OpenAI api key"
 	. ./.env
 	@echo "Starting loomaai services..."
-	@docker-compose -f $(LOOMA_AI_DIR)/$(COMPOSE_FILE) up -d
+	@docker compose -f $(LOOMA_AI_DIR)/$(COMPOSE_FILE) up -d
 	@echo "loomaai is running."
 
 halt:
