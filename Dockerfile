@@ -14,6 +14,7 @@ RUN uv venv --python=python3.12 /app/.venv
 RUN . /app/.venv/bin/activate
 RUN uv pip install --no-cache-dir -r /app/requirements.txt
 
+
 COPY bootup.sh /app/bootup.sh
 
 RUN mkdir -p /app/appai

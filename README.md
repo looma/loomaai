@@ -6,14 +6,12 @@
 2. Ensure the Looma-II docker-compose is running
 3. Clone this "loomaai" repo to your computer `git clone https://github.com/looma/loomaai`
 4. Obtain an OpenAI API key and add it to a new file in this directory called `.env` with the following contents:
-
-  ```shell
-  export OPENAI_API_KEY=[your-api-key-here]
-  ```
-
-5. Run `make` (build the streamlit image) - this could take a few minutes
-6. Run `make setup-host` - (start python env, import openai key, load py requirements)
-7. Run `make run` - (start qdrant and streamlit containers)
+```shell
+export OPENAI_API_KEY=[your-api-key-here]
+```
+5. Run `make setup-host` (start python env, import openai key, load py requirements)
+6. Run `make build` (build the streamlit image) - this could take a few minutes 
+7. Run `make run` (start qdrant and streamlit containers)
 8. Navigate to [http://localhost:47000/loomaai](http://localhost:47000/loomaai) to access the dashboard
 9. Create the `loomaai/data/files/textbooks` folder within this folder, if it does not already exist
 
@@ -90,7 +88,7 @@ make embed-missing
 * Follow the steps in "Run Containers" and "Embed All Activities" first
 
 ```bash
-make populate-mongo
+make assign-chapters-resources
 ```
 
 * This process will populate the "related resources" for every chapter in [Looma-II](https://github.com/looma/Looma-II)
