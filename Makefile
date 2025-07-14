@@ -30,6 +30,12 @@ build:
 	@docker build -t loomaai -f Dockerfile .
 	@echo "Build complete."
 
+rmi:
+	@echo "Removing loomaai image..."
+	@docker rmi loomaai
+	@docker system prune -f
+	@echo "Image removed."
+
 update:
 	@echo "Updating loomaai..."
 	@git -C $(LOOMA_AI_DIR) pull
@@ -62,6 +68,11 @@ shell:
 
 split:
 	@$(setup_env) python3 -m appai.cli.split
+
+
+pull_model:
+	@echo "Pulling the latest model...for llama3.2:3b"
+	@docker exec -ti looma-ollama /usr/bin/ollama pull llama3.2:3b
 
 embed-all:
 	@$(setup_env) python3 -m appai.cli.embed

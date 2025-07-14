@@ -1,6 +1,11 @@
 data/
+.data/
 *.log
 __pycache__/
 env
 .env
 .DS_Store
+.vscode/
+.ropeproject/
+.mypy_cache/
+*.pyc
