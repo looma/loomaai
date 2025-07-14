@@ -113,7 +113,7 @@ This process will update all lessons in MongoDB with a new field `data_np` conta
 
 #### Generate Video Captions
 
-* Requires ffmpeg
+* Requires [ffmpeg](https://johnvansickle.com/ffmpeg/) to be in PATH
 
 This process will iterate through MongoDB "activities" collection and filter for "ft" == "video". It will download each video file from the remote looma server, transcribe the video, then save a file in `data/content/video_captions/en/{fp}{fn}` Note that the "../" prefix will be removed from fp, and the fn extension will be changed to vtt. These generated captions must be manually uploaded to looma website.
 
