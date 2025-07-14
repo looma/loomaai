@@ -36,7 +36,7 @@ run:
 	@echo "Make sure your .env file is populated with the OpenAI api key"
 	. ./.env
 	@echo "Starting loomaai services..."
-	@docker-compose -f $(LOOMA_AI_DIR)/$(COMPOSE_FILE) up -d
+	@docker compose -f $(LOOMA_AI_DIR)/$(COMPOSE_FILE) up -d
 	@echo "loomaai is running."
 
 halt:
