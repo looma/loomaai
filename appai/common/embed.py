@@ -72,10 +72,10 @@ def process_activity(activity: Activity, hf: HuggingFaceEmbeddings, vector_db: Q
 
     text = activity.get_text(mongo=db)
     payload = activity.payload()
+    payload["cl_lo"] = activity.cl_lo
+    payload["cl_hi"] = activity.cl_hi
     try:
         if activity.cl_lo is None or activity.cl_hi is None:
-            payload["cl_lo"] = 0
-            payload["cl_hi"] = 13
             r = Readability(text)
             fk = r.flesch_kincaid()
             # detected_range = prompt_text(ChatOpenAI(),
@@ -90,7 +90,12 @@ def process_activity(activity: Activity, hf: HuggingFaceEmbeddings, vector_db: Q
                 payload["cl_hi"] = cl_hi
                 db.get_collection("activities").update_one({"_id": activity.activity['_id']},
                                                            {"$set": {"cl_lo": cl_lo, "cl_hi": cl_hi}})
+            else:
+                payload["cl_lo"] = 0
+                payload["cl_hi"] = 13
     except Exception as e:
+        payload["cl_lo"] = 0
+        payload["cl_hi"] = 13
         print(f"Error determining grade level for activity {activity.activity['_id']}: {e}")
 
     embeddings = activity.embed(mongo=db, embeddings=hf)
