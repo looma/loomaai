@@ -31,6 +31,7 @@ def transcribe_all_videos():
                 download_dir = data_dir+fp
                 if os.path.exists(os.path.splitext(download_dir+fn)[0]+".vtt"):
                     print(f"SKIPPING {fn}: transcript file exists on disk")
+                    progress_bar()
                     continue
 
                 response = requests.get(f"https://looma.website/{fp}{fn}")
