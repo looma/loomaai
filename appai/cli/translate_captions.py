@@ -40,7 +40,7 @@ def translate_vtt_to_np(vtt_path, llm):
 
 data_dir = os.getenv("DATADIR")
 
-all_vtts = list_files_recursive(data_dir + "/content/videos/")
+all_vtts = list_files_recursive(data_dir + "/content/")
 
 llm = ChatOpenAI()
 
