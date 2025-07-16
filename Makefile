@@ -21,7 +21,7 @@ setup-host:
 	@python3.12 -m venv env
 	@. ./env/bin/activate; \
 	pip3 install -r requirements.txt; \
-    python -m nltk.downloader punkt \
+	python -m nltk.downloader punkt; \
 	python -m nltk.downloader punkt_tab;
 
 
