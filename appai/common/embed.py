@@ -86,7 +86,7 @@ def process_activity(activity: Activity, hf: HuggingFaceEmbeddings, vector_db: Q
     try:
         r = Readability(text)
         grade = int(r.flesch_kincaid().grade_level)
-        if grade:
+        if 0 < grade < 13:
             cl_lo = grade - 1
             cl_hi = grade + 1
             # detected_range = prompt_text(ChatOpenAI(),
