@@ -33,6 +33,10 @@ def generate_vectors(mongo_client: MongoClient, vector_db: QdrantClient, missing
         encode_kwargs=encode_kwargs
     )
 
+    successes = 0
+    no_reading_level = 0
+    errors = 0
+
     with alive_bar(activities_collection.count_documents(
             {"ft": {"$in": ["chapter", "html", "pdf", "video"]}})) as progress_bar:
         # Use ThreadPoolExecutor to speed up the loop
@@ -58,9 +62,13 @@ def generate_vectors(mongo_client: MongoClient, vector_db: QdrantClient, missing
                 process_activity(ac, hf, vector_db, db, missing_only)
                 # future.result()  # Get the result if needed, or handle any exceptions
                 print(f"[Success]", ac.activity['_id'])
+                successes += 1
             except Exception as e:
                 print("[Error]", e, "Activity:", ac.activity["_id"])
+                errors += 1
             progress_bar()
+        print("Successes: ", successes)
+        print("Errors: ", errors)
 
 
 def process_activity(activity: Activity, hf: HuggingFaceEmbeddings, vector_db: QdrantClient, db: Database,
