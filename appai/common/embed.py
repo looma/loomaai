@@ -80,31 +80,28 @@ def process_activity(activity: Activity, hf: HuggingFaceEmbeddings, vector_db: Q
 
     text = activity.get_text(mongo=db)
     payload = activity.payload()
-    payload["cl_lo"] = activity.cl_lo
-    payload["cl_hi"] = activity.cl_hi
+    cl_lo = 0
+    cl_hi = 13
+
     try:
-        if activity.cl_lo is None or activity.cl_hi is None:
-            r = Readability(text)
-            fk = r.flesch_kincaid()
+        r = Readability(text)
+        grade = int(r.flesch_kincaid().grade_level)
+        if grade:
+            cl_lo = grade - 1
+            cl_hi = grade + 1
             # detected_range = prompt_text(ChatOpenAI(),
             #                          "You are a school teacher in Nepal deciding which grade level (1-12) this educational resource is appropriate for. Refer to nepalese educational standards in your decision. What is the minimum and maximum grade level (1-12) you would use this resource for? Return only two numerical numbers between 1 and 12, separated by a comma (min and max grade). No words or other characters. Here is the resource:  {text}",
             #                          text).removeprefix("```").removesuffix("```")
 
-            if fk.grade_level:
-                cl_lo = int(fk.grade_level) - 1
-                cl_hi = int(fk.grade_level) + 5
-                # cl_lo, cl_hi = map(int, detected_range.split(","))
-                payload["cl_lo"] = cl_lo
-                payload["cl_hi"] = cl_hi
-                db.get_collection("activities").update_one({"_id": activity.activity['_id']},
+            # cl_lo, cl_hi = map(int, detected_range.split(","))
+
+            db.get_collection("activities").update_one({"_id": activity.activity['_id']},
                                                            {"$set": {"cl_lo": cl_lo, "cl_hi": cl_hi}})
-            else:
-                payload["cl_lo"] = 0
-                payload["cl_hi"] = 13
     except Exception as e:
-        payload["cl_lo"] = 0
-        payload["cl_hi"] = 13
         print(f"Error determining grade level for activity {activity.activity['_id']}: {e}")
+
+    payload["cl_lo"] = cl_lo
+    payload["cl_hi"] = cl_hi
 
     embeddings = activity.embed(mongo=db, embeddings=hf)
 
