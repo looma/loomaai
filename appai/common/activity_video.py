@@ -1,4 +1,5 @@
 import os
+import re
 
 from .activity import Activity
 
@@ -14,8 +15,9 @@ class VideoActivity(Activity):
         return data_dir + fp+os.path.splitext(fn)[0] + ".vtt"
 
     def get_text(self, mongo: Database) -> str:
+        timestamp_pattern = re.compile(r'^(\d{2}:\d{2}\.\d{3})\s*-->\s*(\d{2}:\d{2}\.\d{3})$')
         with open(self.en_caption_path(), "r", encoding="utf-8") as file:
-            return file.read()
+            return " ".join([line for line in file if not timestamp_pattern.match(line.strip())])
 
     def embed(self, mongo: Database, embeddings: HuggingFaceEmbeddings) -> list[float]:
             return embeddings.embed_query(self.get_text(mongo))
