@@ -88,7 +88,7 @@ def process_activity(activity: Activity, hf: HuggingFaceEmbeddings, vector_db: Q
         grade = int(r.flesch_kincaid().grade_level)
         if 0 < grade < 13:
             cl_lo = grade - 1
-            cl_hi = grade + 1
+            cl_hi = grade + 6
             # detected_range = prompt_text(ChatOpenAI(),
             #                          "You are a school teacher in Nepal deciding which grade level (1-12) this educational resource is appropriate for. Refer to nepalese educational standards in your decision. What is the minimum and maximum grade level (1-12) you would use this resource for? Return only two numerical numbers between 1 and 12, separated by a comma (min and max grade). No words or other characters. Here is the resource:  {text}",
             #                          text).removeprefix("```").removesuffix("```")
