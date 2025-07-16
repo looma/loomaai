@@ -36,11 +36,12 @@ def generate_vectors(mongo_client: MongoClient, vector_db: QdrantClient, missing
     with alive_bar(activities_collection.count_documents(
             {"ft": {"$in": ["chapter", "html", "pdf", "video"]}})) as progress_bar:
         # Use ThreadPoolExecutor to speed up the loop
-        with ThreadPoolExecutor() as executor:
+        # with ThreadPoolExecutor() as executor:
             # Submit tasks to the pool
-            futures = {}
+            # futures = {}
 
-            for activity in activities:
+        for activity in activities:
+            try:
                 ac: Activity
                 if activity["ft"] == "html":
                     ac = HtmlActivity(activity)
@@ -50,17 +51,16 @@ def generate_vectors(mongo_client: MongoClient, vector_db: QdrantClient, missing
                     ac = ChapterActivity(activity)
                 if activity["ft"] == "video":
                     ac = VideoActivity(activity)
-                futures[executor.submit(process_activity, ac, hf, vector_db, db, missing_only)] = ac
-
+                # futures[executor.submit(process_activity, ac, hf, vector_db, db, missing_only)] = ac
             # Ensure all futures complete and get the result (if needed)
-            for future in as_completed(futures):
-                activity = futures[future]
-                try:
-                    future.result()  # Get the result if needed, or handle any exceptions
-                    print(f"[Success]", activity.activity['_id'])
-                except Exception as e:
-                    print("[Error]", e, "Activity:", activity.activity["_id"])
-                progress_bar()
+            # for future in as_completed(futures):
+            #     activity = futures[future]
+                process_activity(ac, hf, vector_db, db, missing_only)
+                # future.result()  # Get the result if needed, or handle any exceptions
+                print(f"[Success]", ac.activity['_id'])
+            except Exception as e:
+                print("[Error]", e, "Activity:", ac.activity["_id"])
+            progress_bar()
 
 
 def process_activity(activity: Activity, hf: HuggingFaceEmbeddings, vector_db: QdrantClient, db: Database,
