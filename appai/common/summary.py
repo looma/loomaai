@@ -8,11 +8,11 @@ import fitz
 
 
 class Summary:
-    def __init__(self, url, nepali_url, prompt):
+    def __init__(self, url, nepali_url, prompt, llm_preferred="OpenAI", llm_model=None):
         self.prompt = prompt
         self.filename_en = url
         self.filename_np = nepali_url
-        self.llm = LLMSelect().llm()
+        self.llm = LLMSelect(llm_preferred, llm_model).llm()
 
     # extracts the text from the chapter pdf
     def extract_text(self):

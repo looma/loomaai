@@ -7,8 +7,7 @@ from common.translate_lessons import translate_one_lesson
 from common.streamlit_mongo_viewer import mongodb_viewer
 from pymongo import MongoClient
 
-from common.llmselect import LLMSelect
-# Qdrant server configuration
+from common.llmselect import LLMSelect, LLMInfo
 
 COLLECTION_NAME = "lessons"
 
@@ -28,14 +27,17 @@ def main():
         columns=["dn", "ndn", "translator", "translated", "data"],
         hidden_columns=["data"],
     )
-    llm = LLMSelect().llm()
 
-    # (translate_tab) = st.tabs(['Translate'])
+    # Add LLM provider/model selection
+    providers = LLMInfo().get_providers()
+    selected_llm = st.selectbox("Select LLM Provider:", providers, index=0)
+    models = LLMInfo().get_model_list(selected_llm)
+    selected_model = st.selectbox("Select Model:", models, index=0)
+    llm = LLMSelect(selected_llm, selected_model).llm()
 
-    # with translate_tab:
     st.markdown("""
-    If a lesson is has a "translated" field, the lesson will not be translated. 
-    Iterates through all lessons in MongoDB finds inline text elements 
+    If a lesson has a "translated" field, the lesson will not be translated. 
+    Iterates through all lessons in MongoDB, finds inline text elements, 
     and creates a field `data.nepali` which is the translation of `data.html`.
     """)
     if st.button("Translate"):
