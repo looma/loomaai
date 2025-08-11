@@ -14,9 +14,8 @@ import ssl
 import re
             
 class Dictionary:
-    def __init__ (self):
-        openai_api_key = os.getenv("OPENAI_API_KEY")
-        self.llm = ChatOpenAI(temperature=0, model_name="gpt-4o-mini", api_key=openai_api_key)
+    def __init__ (self, llm_preferred="OpenAI", llm_model=None):
+        self.llm = LLMSelect(llm_preferred, llm_model).llm()
         
     def has_numbers(self, inputString):
         return any(char.isdigit() for char in inputString)
