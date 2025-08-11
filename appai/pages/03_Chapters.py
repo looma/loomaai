@@ -183,6 +183,8 @@ def ChaptersUI():
                         text_en, text_np = quizzer.extract_text()
                         if text_en is not None:
                             dictionary_maker.dict_update(chapter["_id"], text_en, client)
+                        elif text_np is not None:
+                            dictionary_maker.dict_update(chapter["_id"], text_np, client)
                 st.success("Updated dictionary in MongoDB for selected chapters")
 
 
