@@ -19,3 +19,5 @@ streamlit==1.41.1
 openai-whisper==20240930
 deep-translator==1.11.4
 py-readability-metrics==1.4.5
+langdetect==1.0.9
+nepalikit==1.0.2
