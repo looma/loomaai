@@ -17,12 +17,11 @@ define setup_env
 endef
 
 setup-host:
-	@echo "export OPENAI_API_KEY=[your-api-key-here]" > .env
 	@python3.12 -m venv env
-	@. ./env/bin/activate; \
-	pip3 install -r requirements.txt; \
-	python -m nltk.downloader punkt; \
-	python -m nltk.downloader punkt_tab;
+	@env/bin/pip install --upgrade pip wheel "setuptools<71"
+	@env/bin/pip install --no-build-isolation -r requirements.txt
+	@env/bin/python -m nltk.downloader punkt
+	@env/bin/python -m nltk.downloader punkt_tab
 
 
 build:
