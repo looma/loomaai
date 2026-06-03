@@ -12,7 +12,8 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
 COPY requirements.txt /app/requirements.txt
 RUN uv venv --python=python3.12 /app/.venv
 RUN . /app/.venv/bin/activate
-RUN uv pip install --no-cache-dir -r /app/requirements.txt
+RUN uv pip install --no-cache-dir "setuptools<71"
+RUN uv pip install --no-cache-dir --no-build-isolation -r /app/requirements.txt
 
 
 COPY bootup.sh /app/bootup.sh
